@@ -1,4 +1,4 @@
-﻿-- Table des applications
+-- Table des applications
 CREATE TABLE IF NOT EXISTS apps (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT NOT NULL,
@@ -19,14 +19,14 @@ CREATE TABLE IF NOT EXISTS users (
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table des permissions
+-- Table des permissions (quelle app est accessible à quel rôle)
 CREATE TABLE IF NOT EXISTS permissions (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
     app_id  INTEGER NOT NULL REFERENCES apps(id) ON DELETE CASCADE,
     role    TEXT NOT NULL CHECK(role IN ('admin','manager','collab'))
 );
 
--- Table des favoris
+-- Table des favoris (par utilisateur)
 CREATE TABLE IF NOT EXISTS favorites (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS favorites (
     UNIQUE(user_id, app_id)
 );
 
--- Table d'audit
+-- Table d'audit (journal des connexions)
 CREATE TABLE IF NOT EXISTS audit_log (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id    INTEGER REFERENCES users(id),

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 import bcrypt
 import models
 
-SECRET_KEY = "changez-cette-cle-en-production"
+SECRET_KEY = "608fe2d2b3deda6c74f86f5f63e12156f0fedbfbd4b5162cc50ee3a8e4d34599"
 ALGORITHM  = "HS256"
 TOKEN_EXPIRE_MINUTES = 480
 

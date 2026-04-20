@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, Boolean
 from sqlalchemy.sql import func
 from database import Base
 
@@ -15,10 +15,19 @@ class App(Base):
 
 class User(Base):
     __tablename__ = "users"
+    id                   = Column(Integer, primary_key=True)
+    username             = Column(String, nullable=False, unique=True)
+    email                = Column(String, nullable=False, unique=True)
+    password             = Column(String, nullable=False)
+    role                 = Column(String, nullable=False)
+    must_change_password = Column(Boolean, default=False, nullable=False)
+    created_at           = Column(DateTime, default=func.now())
+
+class Role(Base):
+    __tablename__ = "roles"
     id         = Column(Integer, primary_key=True)
-    username   = Column(String, nullable=False, unique=True)
-    password   = Column(String, nullable=False)
-    role       = Column(String, nullable=False)
+    name       = Column(String, nullable=False, unique=True)
+    is_system  = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=func.now())
 
 class Permission(Base):
@@ -33,6 +42,15 @@ class Favorite(Base):
     id      = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     app_id  = Column(Integer, ForeignKey("apps.id", ondelete="CASCADE"))
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+    id         = Column(Integer, primary_key=True)
+    user_id    = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    token      = Column(String, nullable=False, unique=True)
+    expires_at = Column(DateTime, nullable=False)
+    used       = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=func.now())
 
 class AuditLog(Base):
     __tablename__ = "audit_log"
