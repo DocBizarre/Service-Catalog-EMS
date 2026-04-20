@@ -5,6 +5,8 @@ from typing import Optional
 import models, auth
 from database import engine, get_db
 import models as m
+from routers import apps as apps_router
+from routers import admin as admin_router
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -17,6 +19,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(apps_router.router)
+app.include_router(admin_router.router)
 
 # -- Dépendance : récupérer l'utilisateur connecté depuis le cookie
 def get_current_user(token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
