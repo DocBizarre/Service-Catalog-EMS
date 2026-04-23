@@ -147,6 +147,20 @@ class ResetPasswordBody(BaseModel):
     token: str
     new_password: str = Field(..., min_length=8, max_length=128)
 
+# -- Endpoint de health check (pour le monitoring)
+@app.get("/api/health")
+def health(db: Session = Depends(get_db)):
+    """
+    Vérifie que l'app et la DB répondent.
+    Utilisé par les outils de monitoring (Zabbix, Centreon, PRTG, uptime-kuma, etc.).
+    Retourne 200 si tout va bien, 503 si la DB est inaccessible.
+    """
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database error: {e}")
+
 @app.post("/api/login")
 def login(response: Response, username: str, password: str, db: Session = Depends(get_db)):
     user = auth.authenticate_user(db, username, password)

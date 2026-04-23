@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Catalog EMS</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; min-height: 100vh; }
+
+/* Login */
+#login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.login-card { background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; padding: 32px; width: 340px; }
+.login-card h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+.login-card p { font-size: 13px; color: #9c9a92; margin-bottom: 24px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.field label { font-size: 12px; color: #5F5E5A; font-weight: 500; }
+.field input { padding: 8px 10px; border: 0.5px solid #dddcd6; border-radius: 8px; font-size: 13px; }
+.btn-primary { width: 100%; padding: 9px; background: #1D9E75; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; margin-top: 4px; }
+.btn-primary:hover { background: #0F6E56; }
+.error-msg { font-size: 12px; color: #E24B4A; margin-top: 8px; display: none; }
+
+/* App */
+#app-page { display: none; flex-direction: column; min-height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: #fff; border-bottom: 0.5px solid #dddcd6; }
+.logo { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.logo-dot { width: 8px; height: 8px; border-radius: 50%; background: #1D9E75; }
+.search-wrap { flex: 1; max-width: 320px; position: relative; }
+.search-wrap input { width: 100%; padding: 6px 10px 6px 32px; border: 0.5px solid #dddcd6; border-radius: 8px; font-size: 13px; background: #f5f4f0; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9c9a92; font-size: 14px; }
+.user-info { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.role-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; background: #f0efea; color: #5F5E5A; }
+.role-admin { background: #FAECE7; color: #993C1D; }
+.role-manager { background: #E1F5EE; color: #0F6E56; }
+.role-collab { background: #E6F1FB; color: #185FA5; }
+.btn-logout { font-size: 12px; padding: 4px 10px; border: 0.5px solid #dddcd6; border-radius: 8px; background: #fff; cursor: pointer; color: #5F5E5A; }
+.tabs { display: flex; padding: 0 24px; background: #fff; border-bottom: 0.5px solid #dddcd6; }
+.tab { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: #9c9a92; }
+.tab.active { color: #1a1a18; border-bottom-color: #1D9E75; font-weight: 500; }
+.content { flex: 1; padding: 24px; }
+.section-label { font-size: 11px; font-weight: 500; color: #9c9a92; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; margin-top: 20px; }
+.section-label:first-child, #view-catalog > .section-label:first-of-type { margin-top: 0; }
+.tags-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.tag-btn { font-size: 11px; padding: 3px 10px; border-radius: 12px; border: 0.5px solid #dddcd6; background: #fff; color: #5F5E5A; cursor: pointer; }
+.tag-btn.active { background: #E1F5EE; color: #0F6E56; border-color: #5DCAA5; font-weight: 500; }
+.apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 24px; }
+.tile { background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; padding: 16px 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; transition: border-color 0.15s; user-select: none; }
+.tile, .tile * { cursor: pointer; }
+.tile:hover { border-color: #b4b2a9; }
+.tile-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; background: #f5f4f0; }
+.tile-name { font-size: 12px; font-weight: 500; text-align: center; line-height: 1.3; }
+.tile-tag { font-size: 10px; color: #9c9a92; }
+.tile-status { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 50%; }
+.status-on { background: #1D9E75; }
+.status-off { background: #E24B4A; }
+.tile-fav { position: absolute; top: 8px; left: 10px; font-size: 13px; cursor: pointer; opacity: 0.35; transition: opacity 0.15s; background: none; border: none; }
+.tile-fav.active, .tile-fav:hover { opacity: 1; }
+.empty { text-align: center; color: #9c9a92; font-size: 13px; padding: 16px 0; }
+
+/* Admin */
+.admin-card { background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.admin-card h2 { font-size: 14px; font-weight: 500; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+table { width: 100%; font-size: 12px; border-collapse: collapse; }
+th { text-align: left; color: #9c9a92; font-weight: 500; padding: 6px 8px; border-bottom: 0.5px solid #dddcd6; font-size: 11px; text-transform: uppercase; }
+td { padding: 8px; border-bottom: 0.5px solid #f0efea; color: #1a1a18; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+.btn-sm { font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 0.5px solid #dddcd6; background: #fff; cursor: pointer; color: #5F5E5A; }
+.btn-danger { border-color: #F09595; color: #A32D2D; }
+.btn-add { font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 0.5px solid #5DCAA5; background: #E1F5EE; color: #085041; cursor: pointer; font-weight: 500; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.form-field label { font-size: 11px; color: #5F5E5A; font-weight: 500; }
+.form-field input, .form-field select { font-size: 12px; padding: 6px 8px; border: 0.5px solid #dddcd6; border-radius: 8px; }
+.form-wrap { background: #f5f4f0; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: none; }
+.checkbox { width: 16px; height: 16px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- PAGE LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <h1>Service Catalog EMS</h1>
+    <p>Connectez-vous pour accéder à vos applications</p>
+    <form onsubmit="login(); return false;" autocomplete="on">
+      <div class="field">
+        <label>Identifiant</label>
+        <input type="text" id="username" name="username" autocomplete="username" placeholder="ex: admin">
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn-primary">Se connecter</button>
+    </form>
+    <div class="error-msg" id="login-error">Identifiants incorrects</div>
+    <div style="text-align:center;margin-top:14px;">
+      <a href="#" onclick="showForgotPage(); return false;" style="font-size:12px;color:#185FA5;text-decoration:none;">Mot de passe oublié ?</a>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE MOT DE PASSE OUBLIÉ -->
+<div id="forgot-page" style="display:none;align-items:center;justify-content:center;min-height:100vh;">
+  <div class="login-card">
+    <h1>Mot de passe oublié</h1>
+    <p>Saisissez votre email, nous vous enverrons un lien de réinitialisation.</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="forgot-email" placeholder="votre@email.fr">
+    </div>
+    <button class="btn-primary" onclick="submitForgot()">Envoyer le lien</button>
+    <div id="forgot-message" style="font-size:12px;color:#0F6E56;margin-top:10px;display:none;text-align:center;"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <a href="#" onclick="showLoginPage(); return false;" style="font-size:12px;color:#185FA5;text-decoration:none;">← Retour à la connexion</a>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE RESET PASSWORD (avec token) -->
+<div id="reset-page" style="display:none;align-items:center;justify-content:center;min-height:100vh;">
+  <div class="login-card">
+    <h1>Nouveau mot de passe</h1>
+    <p>Définissez votre nouveau mot de passe.</p>
+    <form onsubmit="submitReset(); return false;" autocomplete="on">
+      <!-- Champ username caché pour aider les gestionnaires de mdp à associer le nouveau mdp au bon compte -->
+      <input type="text" name="username" id="reset-username-hidden" autocomplete="username" style="display:none">
+      <div class="field">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="reset-pw-1" name="new-password" autocomplete="new-password" placeholder="Au moins 8 caractères">
+      </div>
+      <div class="field">
+        <label>Confirmer</label>
+        <input type="password" id="reset-pw-2" name="new-password-confirm" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn-primary">Enregistrer</button>
+    </form>
+    <div class="error-msg" id="reset-error"></div>
+  </div>
+</div>
+
+<!-- PAGE APP -->
+<div id="app-page">
+  <div class="topbar">
+    <div class="logo"><span class="logo-dot"></span> AppHub</div>
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" placeholder="Rechercher..." oninput="renderCatalog()">
+    </div>
+    <div class="user-info">
+      <span id="username-display"></span>
+      <span id="role-badge" class="role-badge"></span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" id="tab-catalog" onclick="showTab('catalog')">Catalogue</div>
+    <div class="tab" id="tab-admin" onclick="showTab('admin')">Administration</div>
+    <div class="tab" id="tab-audit" onclick="showTab('audit')">Audit</div>
+  </div>
+  <div class="content">
+
+    <!-- CATALOGUE -->
+    <div id="view-catalog">
+      <div class="tags-bar" id="tags-bar"></div>
+      <div class="section-label">Favoris</div>
+      <div class="apps-grid" id="fav-grid"></div>
+      <div id="categories-container"></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="view-admin" style="display:none">
+      <div class="admin-card">
+        <h2>Applications <button class="btn-add" onclick="toggleForm()">+ Ajouter</button></h2>
+        <div class="form-wrap" id="add-form">
+          <div class="form-row">
+            <div class="form-field"><label>Nom</label><input id="f-name" type="text"></div>
+            <div class="form-field"><label>URL</label><input id="f-url" type="text"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Icône</label><input id="f-icon" type="text" placeholder="📦"></div>
+            <div class="form-field"><label>Tag</label>
+              <select id="f-tag">
+                <option>Général</option><option>RH</option><option>Finance</option>
+                <option>IT</option><option>Commercial</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn-sm" onclick="toggleForm()">Annuler</button>
+            <button class="btn-add" onclick="createApp()">Enregistrer</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>App</th><th>URL</th><th>Tag</th><th>Statut</th><th></th></tr></thead>
+          <tbody id="admin-apps-list"></tbody>
+        </table>
+      </div>
+      <div class="admin-card">
+        <h2>Rôles <button class="btn-add" onclick="toggleRoleForm()">+ Ajouter</button></h2>
+        <div class="form-wrap" id="add-role-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label>Nom du rôle (minuscules, sans espace)</label>
+              <input id="f-role-name" type="text" placeholder="ex: rh, direction, support">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn-sm" onclick="toggleRoleForm()">Annuler</button>
+            <button class="btn-add" onclick="createRole()">Enregistrer</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Nom</th><th>Type</th><th>Utilisateurs</th><th></th></tr></thead>
+          <tbody id="roles-list"></tbody>
+        </table>
+      </div>
+      <div class="admin-card">
+        <h2>Matrice des droits</h2>
+        <table>
+          <thead><tr id="permissions-header"><th>Application</th></tr></thead>
+          <tbody id="permissions-matrix"></tbody>
+        </table>
+      </div>
+      <div class="admin-card">
+        <h2>Utilisateurs <button class="btn-add" onclick="toggleUserForm()">+ Ajouter</button></h2>
+        <div class="form-wrap" id="add-user-form">
+          <div class="form-row">
+            <div class="form-field"><label>Identifiant</label><input id="f-user-name" type="text" autocomplete="off" placeholder="ex: jdupont"></div>
+            <div class="form-field"><label>Email</label><input id="f-user-email" type="email" autocomplete="off" placeholder="jdupont@ems.fr"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Rôle</label><select id="f-user-role"></select></div>
+            <div class="form-field">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-top:18px;">
+                <input type="checkbox" id="f-user-gen" checked onchange="togglePasswordInput()">
+                Générer un mot de passe aléatoire
+              </label>
+            </div>
+          </div>
+          <div class="form-row" id="password-row" style="display:none">
+            <div class="form-field" style="grid-column: span 2;">
+              <label>Mot de passe initial (min 8 caractères)</label>
+              <input id="f-user-password" type="text" autocomplete="off" placeholder="••••••••">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn-sm" onclick="toggleUserForm()">Annuler</button>
+            <button class="btn-add" onclick="createUser()">Créer l'utilisateur</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;">
+          <input id="user-filter-text" type="text" placeholder="Rechercher un identifiant ou email..." oninput="renderUsersList()" style="flex:1;font-size:12px;padding:6px 8px;border:0.5px solid #dddcd6;border-radius:8px;">
+          <select id="user-filter-role" onchange="renderUsersList()" style="font-size:12px;padding:6px 8px;border:0.5px solid #dddcd6;border-radius:8px;">
+            <option value="">Tous les rôles</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>Identifiant</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="users-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AUDIT -->
+    <div id="view-audit" style="display:none">
+      <div class="admin-card">
+        <h2>Journal d'audit</h2>
+        <table>
+          <thead><tr><th>Utilisateur</th><th>Action</th><th>Détail</th><th>Date</th></tr></thead>
+          <tbody id="audit-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL : affichage mot de passe généré -->
+<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:24px;width:380px;">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:8px;">Utilisateur créé ✅</h2>
+    <p style="font-size:12px;color:#5F5E5A;margin-bottom:14px;">
+      Communiquez ce mot de passe à l'utilisateur. Il devra le changer à sa première connexion.
+    </p>
+    <div style="background:#f5f4f0;border-radius:8px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:10px;color:#9c9a92;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Identifiant</div>
+      <div id="gen-username" style="font-size:13px;font-weight:500;margin-bottom:10px;"></div>
+      <div style="font-size:10px;color:#9c9a92;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Mot de passe</div>
+      <div id="gen-password" style="font-size:14px;font-family:monospace;font-weight:600;color:#1D9E75;"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn-sm" onclick="copyPassword()">Copier</button>
+      <button class="btn-primary" style="width:auto;padding:6px 14px;" onclick="closeGenModal()">J'ai noté</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : forçage changement de mot de passe -->
+<div id="force-pw-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1001;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:24px;width:360px;">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px;">Changement de mot de passe requis</h2>
+    <p style="font-size:12px;color:#5F5E5A;margin-bottom:16px;">
+      Pour des raisons de sécurité, vous devez définir un nouveau mot de passe avant de continuer.
+    </p>
+    <form onsubmit="submitNewPassword(); return false;" autocomplete="on">
+      <!-- Champ username caché pour aider les gestionnaires de mdp -->
+      <input type="text" name="username" id="force-username-hidden" autocomplete="username" style="display:none">
+      <div class="field">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="new-pw-1" name="new-password" autocomplete="new-password" placeholder="Au moins 8 caractères">
+      </div>
+      <div class="field">
+        <label>Confirmer</label>
+        <input type="password" id="new-pw-2" name="new-password-confirm" autocomplete="new-password">
+      </div>
+      <div class="error-msg" id="force-pw-error"></div>
+      <button type="submit" class="btn-primary">Enregistrer</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const API = '';  // Même origine que la page (http://127.0.0.1:8000 en dev, https://catalog.ems.fr en prod)
+
+// Variables globales — déclarées AVANT checkSession()
+let currentUser = null;
+let allApps = [];
+let activeTag = null;
+let allUsers = [];
+let allRoles = [];
+
+// Vérifier si déjà connecté au chargement.
+// Le cookie est httponly : JS ne peut PAS le lire via document.cookie.
+// On interroge simplement /api/me — le navigateur enverra le cookie automatiquement
+// grâce à credentials: 'include'.
+async function checkSession() {
+  try {
+    const res = await fetch(`${API}/api/me`, { credentials: 'include' });
+    if (!res.ok) return; // pas de session valide → on reste sur la page login
+    currentUser = await res.json();
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('app-page').style.display = 'flex';
+    document.getElementById('username-display').textContent = currentUser.username;
+    const badge = document.getElementById('role-badge');
+    badge.textContent = currentUser.role;
+    badge.className = `role-badge role-${currentUser.role}`;
+    if (currentUser.role === 'collab') {
+      document.getElementById('tab-admin').style.display = 'none';
+      document.getElementById('tab-audit').style.display = 'none';
+    }
+    await loadApps();
+    restoreTab();
+    if (currentUser.must_change_password) openForcePwModal();
+  } catch (e) {
+    console.error('checkSession error:', e);
+  }
+}
+
+// Lancer au démarrage : vérifier d'abord si on arrive via un lien de reset
+(function init() {
+  const params = new URLSearchParams(window.location.search);
+  const resetToken = params.get('reset_token');
+  if (resetToken) {
+    window._resetToken = resetToken;
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('reset-page').style.display = 'flex';
+    return;
+  }
+  checkSession();
+})();
+
+// -- Navigation entre pages auth
+function showForgotPage() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('forgot-page').style.display = 'flex';
+  document.getElementById('forgot-message').style.display = 'none';
+  document.getElementById('forgot-email').value = '';
+}
+
+function showLoginPage() {
+  document.getElementById('forgot-page').style.display = 'none';
+  document.getElementById('reset-page').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+}
+
+async function submitForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { alert('Email requis'); return; }
+  const res = await fetch(`${API}/api/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ email })
+  });
+  const data = await res.json();
+  const msg = document.getElementById('forgot-message');
+  msg.textContent = data.message || 'Email envoyé si le compte existe.';
+  msg.style.display = 'block';
+}
+
+async function submitReset() {
+  const pw1 = document.getElementById('reset-pw-1').value;
+  const pw2 = document.getElementById('reset-pw-2').value;
+  const errEl = document.getElementById('reset-error');
+  errEl.style.display = 'none';
+  if (pw1.length < 8) {
+    errEl.textContent = 'Minimum 8 caractères';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (pw1 !== pw2) {
+    errEl.textContent = 'Les mots de passe ne correspondent pas';
+    errEl.style.display = 'block';
+    return;
+  }
+  const res = await fetch(`${API}/api/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ token: window._resetToken, new_password: pw1 })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    errEl.textContent = err.detail || 'Erreur';
+    errEl.style.display = 'block';
+    return;
+  }
+  alert('Mot de passe réinitialisé avec succès. Vous pouvez vous connecter.');
+  // Nettoyer l'URL
+  window.history.replaceState({}, '', window.location.pathname);
+  document.getElementById('reset-page').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+}
+
+// -- Auth
+async function login() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const res = await fetch(`${API}/api/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
+    method: 'POST', credentials: 'include'
+  });
+  if (!res.ok) {
+    document.getElementById('login-error').style.display = 'block';
+    return;
+  }
+  currentUser = await res.json();
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app-page').style.display = 'flex';
+  document.getElementById('username-display').textContent = currentUser.username;
+  const badge = document.getElementById('role-badge');
+  badge.textContent = currentUser.role;
+  badge.className = `role-badge role-${currentUser.role}`;
+  if (currentUser.role === 'collab') {
+    document.getElementById('tab-admin').style.display = 'none';
+    document.getElementById('tab-audit').style.display = 'none';
+  }
+  await loadApps();
+  showTab('catalog');  // après login, toujours atterrir sur le catalogue
+  if (currentUser.must_change_password) openForcePwModal();
+}
+
+async function logout() {
+  await fetch(`${API}/api/logout`, { method: 'POST', credentials: 'include' });
+  currentUser = null;
+  allApps = [];
+  history.replaceState(null, '', window.location.pathname);
+  document.getElementById('app-page').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+}
+
+// -- Catalogue
+async function loadApps() {
+  const res = await fetch(`${API}/api/apps`, { credentials: 'include' });
+  if (!res.ok) return;
+  allApps = await res.json();
+  renderTags();
+  renderCatalog();
+}
+
+function renderTags() {
+  const tags = [...new Set(allApps.map(a => a.tag))];
+  const bar = document.getElementById('tags-bar');
+  bar.innerHTML = `<button class="tag-btn ${!activeTag ? 'active' : ''}" onclick="setTag(null)">Tout</button>`
+    + tags.map(t => `<button class="tag-btn ${activeTag === t ? 'active' : ''}" onclick="setTag('${t}')">${t}</button>`).join('');
+}
+
+function setTag(t) { activeTag = t; renderTags(); renderCatalog(); }
+
+function renderCatalog() {
+  const q = document.querySelector('.search-wrap input').value.toLowerCase();
+  const visible = allApps.filter(a =>
+    (!activeTag || a.tag === activeTag) &&
+    (!q || a.name.toLowerCase().includes(q) || a.tag.toLowerCase().includes(q))
+  );
+  const favs = visible.filter(a => a.favorite);
+  const rest = visible.filter(a => !a.favorite);
+
+  // Favoris
+  document.getElementById('fav-grid').innerHTML = favs.length
+    ? favs.map(makeTile).join('')
+    : '<div class="empty">Épinglez une application avec ☆</div>';
+
+  // Grouper le reste par tag (catégorie)
+  const grouped = {};
+  rest.forEach(a => {
+    const cat = a.tag || 'Général';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(a);
+  });
+
+  // Ordre des catégories : alphabétique, avec "Général" à la fin s'il existe
+  const categories = Object.keys(grouped).sort((a, b) => {
+    if (a === 'Général') return 1;
+    if (b === 'Général') return -1;
+    return a.localeCompare(b, 'fr');
+  });
+
+  const container = document.getElementById('categories-container');
+  if (categories.length === 0) {
+    container.innerHTML = '<div class="empty">Aucune application</div>';
+    return;
+  }
+  container.innerHTML = categories.map(cat => `
+    <div class="section-label">${cat} <span style="color:#b4b2a9;font-weight:400;">· ${grouped[cat].length}</span></div>
+    <div class="apps-grid">${grouped[cat].map(makeTile).join('')}</div>
+  `).join('');
+}
+
+// Rendre l'icône d'une app : soit un logo uploadé (chemin commençant par /logos/),
+// soit un emoji, soit le fallback 📦
+function renderIcon(icon, size) {
+  const s = size || 22;
+  if (icon && icon.startsWith('/logos/')) {
+    return `<img src="${API}${icon}" alt="" style="width:${s * 1.4}px;height:${s * 1.4}px;object-fit:contain;border-radius:6px;">`;
+  }
+  return icon || '📦';
+}
+
+function makeTile(app) {
+  return `<div class="tile" title="${app.url}" onclick="window.open('${app.url}', '_blank')">
+    <button class="tile-fav ${app.favorite ? 'active' : ''}" onclick="toggleFav(${app.id}, event)">${app.favorite ? '★' : '☆'}</button>
+    <div class="tile-status ${app.online ? 'status-on' : 'status-off'}"></div>
+    <div class="tile-icon">${renderIcon(app.icon, 22)}</div>
+    <div class="tile-name">${app.name}</div>
+    <div class="tile-tag">${app.tag}</div>
+  </div>`;
+}
+
+async function toggleFav(appId, e) {
+  e.stopPropagation();
+  const app = allApps.find(a => a.id === appId);
+  const method = app.favorite ? 'DELETE' : 'POST';
+  await fetch(`${API}/api/favorites/${appId}`, { method, credentials: 'include' });
+  app.favorite = !app.favorite;
+  renderCatalog();
+}
+
+// -- Tabs
+function showTab(tab, updateHash = true) {
+  ['catalog', 'admin', 'audit'].forEach(t => {
+    document.getElementById('view-' + t).style.display = t === tab ? 'block' : 'none';
+    document.getElementById('tab-' + t)?.classList.toggle('active', t === tab);
+  });
+  if (tab === 'admin') loadAdmin();
+  if (tab === 'audit') loadAudit();
+
+  // Persister l'onglet dans l'URL (sans recharger la page)
+  if (updateHash) {
+    history.replaceState(null, '', '#' + tab);
+  }
+}
+
+// Restaurer l'onglet actif depuis le hash de l'URL au chargement
+function restoreTab() {
+  const hash = (window.location.hash || '').replace('#', '');
+  const valid = ['catalog', 'admin', 'audit'];
+  // Vérifier que le tab existe ET est visible pour l'user (admin/audit cachés pour collab)
+  if (valid.includes(hash)) {
+    const tabEl = document.getElementById('tab-' + hash);
+    if (tabEl && tabEl.style.display !== 'none') {
+      showTab(hash, false);
+      return;
+    }
+  }
+  showTab('catalog', false);
+}
+
+// -- Admin
+function toggleForm() {
+  const f = document.getElementById('add-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadAdmin() {
+  // Sauvegarder l'état visuel AVANT de recharger
+  const state = {
+    scroll: window.scrollY,
+    filterText: document.getElementById('user-filter-text')?.value || '',
+    filterRole: document.getElementById('user-filter-role')?.value || '',
+    userFormOpen: document.getElementById('add-user-form')?.style.display === 'block',
+    roleFormOpen: document.getElementById('add-role-form')?.style.display === 'block',
+    appFormOpen: document.getElementById('add-form')?.style.display === 'block',
+    focusedId: document.activeElement?.id || null,
+  };
+
+  const [appsRes, permsRes, usersRes, rolesRes] = await Promise.all([
+    fetch(`${API}/api/admin/apps`, { credentials: 'include' }),
+    fetch(`${API}/api/admin/permissions`, { credentials: 'include' }),
+    fetch(`${API}/api/admin/users`, { credentials: 'include' }),
+    fetch(`${API}/api/admin/roles`, { credentials: 'include' }),
+  ]);
+  const apps = await appsRes.json();
+  const perms = await permsRes.json();
+  allUsers = await usersRes.json();
+  allRoles = await rolesRes.json();
+
+  // Table apps
+  document.getElementById('admin-apps-list').innerHTML = apps.map(a => `
+    <tr>
+      <td>${renderIcon(a.icon, 18)} ${a.name}</td>
+      <td style="color:#9c9a92;font-size:11px;">${a.url}</td>
+      <td>${a.tag}</td>
+      <td><span style="color:${a.online ? '#0F6E56' : '#A32D2D'}">${a.online ? 'En ligne' : 'Hors ligne'}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn-sm" onclick="document.getElementById('logo-input-${a.id}').click()" title="Uploader un logo">🖼️</button>
+        <input type="file" id="logo-input-${a.id}" style="display:none" accept="image/*" onchange="uploadLogo(${a.id}, this)">
+        <button class="btn-sm btn-danger" onclick="deleteApp(${a.id})">Supprimer</button>
+      </td>
+    </tr>`).join('');
+
+  // Table rôles
+  document.getElementById('roles-list').innerHTML = allRoles.map(r => {
+    const userCount = allUsers.filter(u => u.role === r.name).length;
+    const canDelete = !r.is_system && userCount === 0;
+    const title = r.is_system
+      ? 'Rôle système, non supprimable'
+      : (userCount > 0 ? `${userCount} utilisateur(s) utilisent ce rôle` : 'Supprimer');
+    return `
+      <tr data-role="${r.name}">
+        <td><span class="role-badge role-${r.name}">${r.name}</span></td>
+        <td style="color:#9c9a92;font-size:11px;">${r.is_system ? 'Système' : 'Personnalisé'}</td>
+        <td>${userCount}</td>
+        <td>
+          <button class="btn-sm btn-danger"
+                  onclick="deleteRole('${r.name}')"
+                  title="${title}"
+                  ${canDelete ? '' : 'disabled style="opacity:0.4;cursor:not-allowed"'}>
+            Supprimer
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  // Matrice droits — en-tête dynamique
+  const roleNames = allRoles.map(r => r.name);
+  document.getElementById('permissions-header').innerHTML =
+    '<th>Application</th>' + roleNames.map(r => `<th>${r}</th>`).join('');
+  document.getElementById('permissions-matrix').innerHTML = apps.map(a => `
+    <tr>
+      <td>${renderIcon(a.icon, 18)} ${a.name}</td>
+      ${roleNames.map(r => {
+        const has = perms.some(p => p.app_id === a.id && p.role === r);
+        return `<td><input type="checkbox" class="checkbox" ${has ? 'checked' : ''} onchange="togglePerm(${a.id}, '${r}', this.checked, this)"></td>`;
+      }).join('')}
+    </tr>`).join('');
+
+  // Remplir les <select> de rôles (création + filtre)
+  const roleOptions = roleNames.map(r => `<option value="${r}">${r}</option>`).join('');
+  document.getElementById('f-user-role').innerHTML = roleOptions;
+  document.getElementById('user-filter-role').innerHTML =
+    '<option value="">Tous les rôles</option>' + roleOptions;
+
+  // Restaurer les filtres AVANT de rendre la liste
+  if (state.filterText) document.getElementById('user-filter-text').value = state.filterText;
+  if (state.filterRole) document.getElementById('user-filter-role').value = state.filterRole;
+
+  // Afficher la table users (avec filtres appliqués)
+  renderUsersList();
+
+  // Restaurer l'état visuel APRÈS le rendu
+  if (state.userFormOpen) document.getElementById('add-user-form').style.display = 'block';
+  if (state.roleFormOpen) document.getElementById('add-role-form').style.display = 'block';
+  if (state.appFormOpen) document.getElementById('add-form').style.display = 'block';
+
+  // Restaurer le focus (utile si on tapait dans le filtre au moment du refresh)
+  if (state.focusedId) {
+    const el = document.getElementById(state.focusedId);
+    if (el && typeof el.focus === 'function') {
+      el.focus();
+      // Replacer le curseur à la fin pour les inputs texte
+      if (el.setSelectionRange && el.value) {
+        el.setSelectionRange(el.value.length, el.value.length);
+      }
+    }
+  }
+
+  // Restaurer la position de scroll
+  window.scrollTo({ top: state.scroll, behavior: 'instant' });
+}
+
+// -- Rendu de la table des utilisateurs avec filtres
+function renderUsersList() {
+  const q = (document.getElementById('user-filter-text')?.value || '').toLowerCase().trim();
+  const roleFilter = document.getElementById('user-filter-role')?.value || '';
+  const roleNames = allRoles.map(r => r.name);
+
+  const filtered = allUsers.filter(u => {
+    if (roleFilter && u.role !== roleFilter) return false;
+    if (q && !u.username.toLowerCase().includes(q) && !(u.email || '').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    document.getElementById('users-list').innerHTML =
+      '<tr><td colspan="5" style="text-align:center;color:#9c9a92;padding:16px;">Aucun utilisateur trouvé</td></tr>';
+    return;
+  }
+
+  document.getElementById('users-list').innerHTML = filtered.map(u => {
+    const statut = u.must_change_password
+      ? '<span style="font-size:10px;color:#A32D2D;">Mdp à changer</span>'
+      : '<span style="font-size:10px;color:#0F6E56;">Actif</span>';
+    const isSelf = currentUser && u.id === currentUser.id;
+    const isSuper = u.is_super_admin;
+    const isPlaceholder = (u.email || '').endsWith('@placeholder.local');
+    const emailDisplay = isPlaceholder
+      ? `<span style="color:#A32D2D;font-size:11px;" title="Email temporaire, à modifier">⚠ ${u.email}</span>`
+      : `<span style="font-size:11px;color:#5F5E5A;">${u.email}</span>`;
+
+    // Badges sous le username
+    const badges = [];
+    if (isSelf) badges.push('<span style="font-size:10px;color:#9c9a92;">(vous)</span>');
+    if (isSuper) badges.push('<span style="font-size:9px;background:#FAECE7;color:#993C1D;padding:1px 6px;border-radius:8px;font-weight:500;" title="Super administrateur : compte protégé">🔒 super</span>');
+
+    // Sélect rôle : désactivé si super admin
+    const roleSelect = isSuper
+      ? `<span class="role-badge role-admin">admin</span> <span style="font-size:10px;color:#9c9a92;">(verrouillé)</span>`
+      : `<select onchange="changeUserRole(${u.id}, this.value)" style="font-size:12px;padding:3px 6px;border:0.5px solid #dddcd6;border-radius:6px;">
+          ${roleNames.map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r}</option>`).join('')}
+        </select>`;
+
+    // Bouton reset : verrouillé si super_admin (sauf si c'est lui-même)
+    const canReset = !isSuper || isSelf;
+    const resetBtn = canReset
+      ? `<button class="btn-sm" onclick="resetUserPassword(${u.id}, '${u.username.replace(/'/g, "\\'")}')" title="Réinitialiser le mot de passe">🔑</button>`
+      : `<button class="btn-sm" disabled style="opacity:0.4;cursor:not-allowed;" title="Seul '${u.username}' peut réinitialiser son propre mot de passe">🔑</button>`;
+
+    // Bouton édition email : verrouillé pour super_admin si pas soi-même
+    const canEditEmail = !isSuper || isSelf;
+    const emailBtn = canEditEmail
+      ? `<button class="btn-sm" style="margin-left:4px;font-size:10px;padding:1px 5px;" onclick="editUserEmail(${u.id}, '${(u.email || '').replace(/'/g, "\\'")}')">✎</button>`
+      : '';
+
+    // Bouton supprimer : toujours désactivé pour super_admin
+    const deleteDisabled = isSelf || isSuper;
+    const deleteTitle = isSuper ? 'Super administrateur : compte protégé' : (isSelf ? 'Vous ne pouvez pas vous supprimer' : 'Supprimer');
+    const deleteBtn = `<button class="btn-sm btn-danger"
+              onclick="deleteUser(${u.id}, '${u.username.replace(/'/g, "\\'")}')"
+              title="${deleteTitle}"
+              ${deleteDisabled ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>
+        Supprimer
+      </button>`;
+
+    return `
+    <tr${isSuper ? ' style="background:#fffbf5;"' : ''}>
+      <td>${u.username} ${badges.join(' ')}</td>
+      <td>${emailDisplay} ${emailBtn}</td>
+      <td>${roleSelect}</td>
+      <td>${statut}</td>
+      <td style="white-space:nowrap;">
+        ${resetBtn}
+        ${deleteBtn}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleRoleForm() {
+  const f = document.getElementById('add-role-form');
+  f.style.display = f.style.display === 'none' || !f.style.display ? 'block' : 'none';
+}
+
+async function createRole() {
+  const name = document.getElementById('f-role-name').value.trim();
+  if (!name) return;
+  const res = await fetch(`${API}/api/admin/roles`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ name })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Erreur : ' + (err.detail || 'création impossible'));
+    return;
+  }
+  document.getElementById('f-role-name').value = '';
+  toggleRoleForm();
+  loadAdmin();
+}
+
+async function deleteRole(name) {
+  if (!confirm(`Supprimer le rôle "${name}" ?`)) return;
+  const res = await fetch(`${API}/api/admin/roles/${encodeURIComponent(name)}`, {
+    method: 'DELETE', credentials: 'include'
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Erreur : ' + (err.detail || 'suppression impossible'));
+    return;
+  }
+  loadAdmin();
+}
+
+async function changeUserRole(userId, role) {
+  // Snapshot du rôle précédent pour rollback si erreur
+  const user = allUsers.find(u => u.id === userId);
+  const oldRole = user ? user.role : null;
+
+  const res = await fetch(`${API}/api/admin/users/${userId}/role`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ role })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Erreur : ' + (err.detail || 'changement impossible'));
+    // Rollback visuel : remettre l'ancien rôle dans le select sans reload complet
+    if (user) user.role = oldRole;
+    renderUsersList();
+    updateRoleCounters();
+    return;
+  }
+  // Succès : mettre à jour localement
+  if (user) user.role = role;
+  updateRoleCounters();
+}
+
+// Mise à jour des compteurs "X utilisateurs" dans la table des rôles,
+// sans recharger toute la page admin
+function updateRoleCounters() {
+  allRoles.forEach(r => {
+    const count = allUsers.filter(u => u.role === r.name).length;
+    const row = document.querySelector(`#roles-list tr[data-role="${r.name}"]`);
+    if (!row) return;
+    const countCell = row.querySelector('td:nth-child(3)');
+    if (countCell) countCell.textContent = count;
+    // Rafraîchir aussi l'état du bouton supprimer
+    const btn = row.querySelector('button.btn-danger');
+    if (btn && !r.is_system) {
+      const canDelete = count === 0;
+      btn.disabled = !canDelete;
+      btn.style.opacity = canDelete ? '' : '0.4';
+      btn.style.cursor = canDelete ? '' : 'not-allowed';
+      btn.title = canDelete ? 'Supprimer' : `${count} utilisateur(s) utilisent ce rôle`;
+    }
+  });
+}
+
+// -- Gestion utilisateurs
+
+function toggleUserForm() {
+  const f = document.getElementById('add-user-form');
+  f.style.display = f.style.display === 'none' || !f.style.display ? 'block' : 'none';
+}
+
+function togglePasswordInput() {
+  const gen = document.getElementById('f-user-gen').checked;
+  document.getElementById('password-row').style.display = gen ? 'none' : 'grid';
+}
+
+async function createUser() {
+  const username = document.getElementById('f-user-name').value.trim();
+  const email = document.getElementById('f-user-email').value.trim();
+  const role = document.getElementById('f-user-role').value;
+  const useGen = document.getElementById('f-user-gen').checked;
+  const password = useGen ? null : document.getElementById('f-user-password').value;
+
+  if (!username) { alert('Identifiant requis'); return; }
+  if (!email) { alert('Email requis'); return; }
+  if (!useGen && (!password || password.length < 8)) {
+    alert('Mot de passe : minimum 8 caractères');
+    return;
+  }
+
+  const res = await fetch(`${API}/api/admin/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, email, role, password })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Erreur : ' + (err.detail || 'création impossible'));
+    return;
+  }
+  const data = await res.json();
+
+  document.getElementById('f-user-name').value = '';
+  document.getElementById('f-user-email').value = '';
+  document.getElementById('f-user-password').value = '';
+  document.getElementById('f-user-gen').checked = true;
+  togglePasswordInput();
+  toggleUserForm();
+
+  if (data.generated_password) {
+    document.getElementById('gen-username').textContent = data.username;
+    document.getElementById('gen-password').textContent = data.generated_password;
+    document.getElementById('modal-overlay').style.display = 'flex';
+  } else {
+    alert(`Utilisateur ${data.username} créé. Il devra changer son mot de passe à la première connexion.`);
+  }
+
+  loadAdmin();
+}
+
+async function resetUserPassword(userId, username) {
+  if (!confirm(`Réinitialiser le mot de passe de "${username}" ?\nUn nouveau mot de passe sera généré.`)) return;
+  const res = await fetch(`${API}/api/admin/users/${userId}/reset-password`, {
+    method: 'POST', credentials: 'include'
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Erreur : ' + (err.detail || 'reset impossible'));
+    return;
+  }
+  const data = await res.json();
+  document.getElementById('gen-username').textContent = data.username;
+  document.getElementById('gen-password').textContent = data.generated_password;
+  document.getElementById('modal-overlay').style.display = 'flex';
+  // Mise à jour locale du flag must_change_password
+  const user = allUsers.find(u => u.id === userId);
+  if (user) user.must_change_password = true;
+  renderUsersList();
+}
+
+async function editUserEmail(userId, currentEmail) {
+  const newEmail = prompt('Nouvel email :', currentEmail);
+  if (!newEmail || newEmail === currentEmail) return;
+  const res = await fetch(`${API}/api/admin/users/${userId}/email`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ email: newEmail.trim() })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Erreur : ' + (err.detail || 'modification impossible'));
+    return;
+  }
+  // Mise à jour locale sans reload
+  const user = allUsers.find(u => u.id === userId);
+  if (user) user.email = newEmail.trim();
+  renderUsersList();
+}
+
+async function deleteUser(userId, username) {
+  if (!confirm(`Supprimer l'utilisateur "${username}" ?`)) return;
+  const res = await fetch(`${API}/api/admin/users/${userId}`, {
+    method: 'DELETE', credentials: 'include'
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Erreur : ' + (err.detail || 'suppression impossible'));
+    return;
+  }
+  loadAdmin();
+}
+
+function closeGenModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+}
+
+async function copyPassword() {
+  const pw = document.getElementById('gen-password').textContent;
+  try {
+    await navigator.clipboard.writeText(pw);
+    alert('Mot de passe copié !');
+  } catch {
+    alert('Copie impossible — notez-le manuellement.');
+  }
+}
+
+// -- Forçage changement de mot de passe
+
+function openForcePwModal() {
+  document.getElementById('force-pw-overlay').style.display = 'flex';
+  document.getElementById('new-pw-1').value = '';
+  document.getElementById('new-pw-2').value = '';
+  // Remplir le champ username caché pour aider les gestionnaires de mdp navigateur
+  if (currentUser) {
+    document.getElementById('force-username-hidden').value = currentUser.username;
+  }
+  document.getElementById('force-pw-error').style.display = 'none';
+  setTimeout(() => document.getElementById('new-pw-1').focus(), 50);
+}
+
+async function submitNewPassword() {
+  const pw1 = document.getElementById('new-pw-1').value;
+  const pw2 = document.getElementById('new-pw-2').value;
+  const errEl = document.getElementById('force-pw-error');
+  errEl.style.display = 'none';
+
+  if (pw1.length < 8) {
+    errEl.textContent = 'Minimum 8 caractères';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (pw1 !== pw2) {
+    errEl.textContent = 'Les mots de passe ne correspondent pas';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const res = await fetch(`${API}/api/change-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ new_password: pw1 })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    errEl.textContent = err.detail || 'Erreur';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (currentUser) currentUser.must_change_password = false;
+  document.getElementById('force-pw-overlay').style.display = 'none';
+}
+
+
+async function createApp() {
+  const data = {
+    name: document.getElementById('f-name').value,
+    url: document.getElementById('f-url').value,
+    icon: document.getElementById('f-icon').value || '📦',
+    tag: document.getElementById('f-tag').value,
+  };
+  await fetch(`${API}/api/admin/apps`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data)
+  });
+  toggleForm();
+  loadAdmin();
+  loadApps();
+}
+
+async function deleteApp(id) {
+  if (!confirm('Supprimer cette application ?')) return;
+  await fetch(`${API}/api/admin/apps/${id}`, { method: 'DELETE', credentials: 'include' });
+  loadAdmin();
+  loadApps();
+}
+
+async function togglePerm(appId, role, checked, checkboxEl) {
+  const method = checked ? 'POST' : 'DELETE';
+  const url = `${API}/api/admin/permissions?app_id=${appId}&role=${encodeURIComponent(role)}`;
+  try {
+    const res = await fetch(url, { method, credentials: 'include' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert('Erreur permission : ' + (err.detail || res.status));
+      // Rollback visuel
+      if (checkboxEl) checkboxEl.checked = !checked;
+    }
+  } catch (e) {
+    alert('Erreur réseau : ' + e.message);
+    if (checkboxEl) checkboxEl.checked = !checked;
+  }
+}
+
+async function uploadLogo(appId, inputEl) {
+  const file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+
+  // Validation côté client
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  const allowed = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'];
+  if (!allowed.includes(ext)) {
+    alert('Format non supporté. Autorisés : ' + allowed.join(', '));
+    inputEl.value = '';
+    return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Fichier trop lourd (max 2 Mo)');
+    inputEl.value = '';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch(`${API}/api/admin/apps/${appId}/logo`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert('Erreur upload : ' + (err.detail || res.status));
+      return;
+    }
+    // Rafraîchir les tables admin ET le catalogue
+    loadAdmin();
+    loadApps();
+  } catch (e) {
+    alert('Erreur réseau : ' + e.message);
+  } finally {
+    inputEl.value = '';  // permettre de re-uploader le même fichier
+  }
+}
+
+// -- Audit
+async function loadAudit() {
+  const res = await fetch(`${API}/api/admin/audit`, { credentials: 'include' });
+  const logs = await res.json();
+  document.getElementById('audit-list').innerHTML = logs.map(l => `
+    <tr>
+      <td><strong>${l.username || '—'}</strong></td>
+      <td><span style="font-size:10px;color:#5F5E5A;background:#f5f4f0;padding:2px 6px;border-radius:4px;">${l.action}</span></td>
+      <td>${l.detail || '-'}</td>
+      <td style="color:#9c9a92;font-size:11px;white-space:nowrap;">${l.date}</td>
+    </tr>`).join('');
+}
+
+// (L'appui sur Enter sur le champ password est géré par le submit du <form>)
+</script>
+</body>
+</html>
