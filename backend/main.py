@@ -1,3 +1,8 @@
+# Charger les variables d'environnement depuis .env (si présent)
+# DOIT être fait avant l'import des modules applicatifs (auth, etc.)
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, Depends, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -92,8 +97,32 @@ def migrate_permissions_table():
             conn.commit()
             print("[MIGRATION] Table permissions migrée avec succès")
 
+def migrate_announcements_table():
+    """Ajouter les colonnes image/category/featured/breaking si absentes."""
+    with engine.connect() as conn:
+        # La table peut ne pas encore exister (sera créée par create_all juste après)
+        tables = [t[0] for t in conn.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='announcements'"
+        )).fetchall()]
+        if not tables:
+            return
+        cols = [row[1] for row in conn.execute(text("PRAGMA table_info(announcements)")).fetchall()]
+        if "image" not in cols:
+            conn.execute(text("ALTER TABLE announcements ADD COLUMN image TEXT"))
+            conn.commit()
+        if "category" not in cols:
+            conn.execute(text("ALTER TABLE announcements ADD COLUMN category TEXT"))
+            conn.commit()
+        if "featured" not in cols:
+            conn.execute(text("ALTER TABLE announcements ADD COLUMN featured BOOLEAN DEFAULT 0 NOT NULL"))
+            conn.commit()
+        if "breaking" not in cols:
+            conn.execute(text("ALTER TABLE announcements ADD COLUMN breaking BOOLEAN DEFAULT 0 NOT NULL"))
+            conn.commit()
+
 migrate_users_table()
 migrate_permissions_table()
+migrate_announcements_table()
 
 def seed_roles():
     db = SessionLocal()
@@ -118,14 +147,19 @@ os.makedirs(LOGOS_DIR, exist_ok=True)
 
 app = FastAPI(title="Service Catalog EMS")
 
+# Origines CORS : liste par défaut pour le dev local, override en prod via env
+default_origins = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
+env_origins = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [o.strip() for o in env_origins.split(",") if o.strip()] or default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -134,8 +168,20 @@ app.add_middleware(
 # Servir les logos uploadés à l'URL /logos/*
 app.mount("/logos", StaticFiles(directory=LOGOS_DIR), name="logos")
 
+# Logo de la société
+COMPANY_LOGOS_DIR = os.path.join(os.path.dirname(__file__), "uploads_storage", "company")
+os.makedirs(COMPANY_LOGOS_DIR, exist_ok=True)
+app.mount("/company-logo", StaticFiles(directory=COMPANY_LOGOS_DIR), name="company-logo")
+
+# Images d'annonces
+ANNOUNCEMENTS_DIR = os.path.join(os.path.dirname(__file__), "uploads_storage", "announcements")
+os.makedirs(ANNOUNCEMENTS_DIR, exist_ok=True)
+app.mount("/announcement-images", StaticFiles(directory=ANNOUNCEMENTS_DIR), name="announcement-images")
+
+from routers import home as home_router
 app.include_router(apps_router.router)
 app.include_router(admin_router.router)
+app.include_router(home_router.router)
 
 class ChangePasswordBody(BaseModel):
     new_password: str = Field(..., min_length=8, max_length=128)
@@ -167,9 +213,11 @@ def login(response: Response, username: str, password: str, db: Session = Depend
     if not user:
         raise HTTPException(status_code=401, detail="Identifiants incorrects")
     token = auth.create_token({"user_id": user.id, "role": user.role})
+    # COOKIE_SECURE=true en production HTTPS, false en dev HTTP local
+    cookie_secure = os.getenv("COOKIE_SECURE", "false").lower() == "true"
     response.set_cookie(
         "token", token, httponly=True, max_age=28800,
-        samesite="lax", secure=False, path="/",
+        samesite="lax", secure=cookie_secure, path="/",
     )
     db.add(m.AuditLog(
         user_id=user.id, action="login",

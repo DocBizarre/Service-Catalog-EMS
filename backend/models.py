@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, Boolean, Text
 from sqlalchemy.sql import func
 from database import Base
 
@@ -30,6 +30,12 @@ class Role(Base):
     is_system  = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=func.now())
 
+class Category(Base):
+    __tablename__ = "categories"
+    id         = Column(Integer, primary_key=True)
+    name       = Column(String, nullable=False, unique=True)
+    created_at = Column(DateTime, default=func.now())
+
 class Permission(Base):
     __tablename__ = "permissions"
     id     = Column(Integer, primary_key=True)
@@ -51,6 +57,25 @@ class PasswordResetToken(Base):
     expires_at = Column(DateTime, nullable=False)
     used       = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=func.now())
+
+class CompanyInfo(Base):
+    __tablename__ = "company_info"
+    key   = Column(String, primary_key=True)
+    value = Column(Text)
+
+class Announcement(Base):
+    __tablename__ = "announcements"
+    id         = Column(Integer, primary_key=True)
+    title      = Column(String, nullable=False)
+    content    = Column(Text, nullable=False)
+    image      = Column(String)          # chemin vers image uploadée (/announcements/xxx.jpg) ou null
+    category   = Column(String)          # ex: "Info", "Alerte", "Événement", "RH"
+    featured   = Column(Boolean, default=False, nullable=False)  # apparaît dans le carousel hero
+    breaking   = Column(Boolean, default=False, nullable=False)  # apparaît dans le bandeau défilant
+    active     = Column(Boolean, default=True, nullable=False)
+    author_id  = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
 class AuditLog(Base):
     __tablename__ = "audit_log"

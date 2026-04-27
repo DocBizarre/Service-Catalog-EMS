@@ -22,34 +22,41 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* App */
 #app-page { display: none; flex-direction: column; min-height: 100vh; }
-.topbar { display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: #fff; border-bottom: 0.5px solid #dddcd6; }
+.topbar { display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: #fff; border-bottom: 0.5px solid #dddcd6; flex-wrap: wrap; }
 .logo { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: #1D9E75; }
-.search-wrap { flex: 1; max-width: 320px; position: relative; }
+.search-wrap { flex: 1; max-width: 320px; min-width: 160px; position: relative; }
 .search-wrap input { width: 100%; padding: 6px 10px 6px 32px; border: 0.5px solid #dddcd6; border-radius: 8px; font-size: 13px; background: #f5f4f0; }
 .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9c9a92; font-size: 14px; }
-.user-info { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.user-info { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .role-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; background: #f0efea; color: #5F5E5A; }
 .role-admin { background: #FAECE7; color: #993C1D; }
 .role-manager { background: #E1F5EE; color: #0F6E56; }
 .role-collab { background: #E6F1FB; color: #185FA5; }
 .btn-logout { font-size: 12px; padding: 4px 10px; border: 0.5px solid #dddcd6; border-radius: 8px; background: #fff; cursor: pointer; color: #5F5E5A; }
-.tabs { display: flex; padding: 0 24px; background: #fff; border-bottom: 0.5px solid #dddcd6; }
-.tab { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: #9c9a92; }
+.tabs { display: flex; padding: 0 24px; background: #fff; border-bottom: 0.5px solid #dddcd6; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tab { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: #9c9a92; white-space: nowrap; flex-shrink: 0; }
 .tab.active { color: #1a1a18; border-bottom-color: #1D9E75; font-weight: 500; }
 .content { flex: 1; padding: 24px; }
+@media (max-width: 600px) {
+  .topbar { padding: 10px 14px; gap: 10px; }
+  .tabs { padding: 0 14px; }
+  .content { padding: 14px; }
+  .user-info { gap: 6px; }
+  #username-display { display: none; }  /* on garde juste le badge de rôle pour gagner de la place */
+}
 .section-label { font-size: 11px; font-weight: 500; color: #9c9a92; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; margin-top: 20px; }
 .section-label:first-child, #view-catalog > .section-label:first-of-type { margin-top: 0; }
 .tags-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
 .tag-btn { font-size: 11px; padding: 3px 10px; border-radius: 12px; border: 0.5px solid #dddcd6; background: #fff; color: #5F5E5A; cursor: pointer; }
 .tag-btn.active { background: #E1F5EE; color: #0F6E56; border-color: #5DCAA5; font-weight: 500; }
 .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 24px; }
-.tile { background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; padding: 16px 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; transition: border-color 0.15s; user-select: none; }
+.tile { background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; padding: 18px 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; transition: all 0.15s; user-select: none; }
 .tile, .tile * { cursor: pointer; }
-.tile:hover { border-color: #b4b2a9; }
-.tile-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; background: #f5f4f0; }
-.tile-name { font-size: 12px; font-weight: 500; text-align: center; line-height: 1.3; }
-.tile-tag { font-size: 10px; color: #9c9a92; }
+.tile:hover { border-color: #b4b2a9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+.tile-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; background: #f5f4f0; flex-shrink: 0; }
+.tile-icon img { width: 38px; height: 38px; object-fit: contain; }
+.tile-name { font-size: 12px; font-weight: 500; text-align: center; line-height: 1.3; color: #1a1a18; }
 .tile-status { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 50%; }
 .status-on { background: #1D9E75; }
 .status-off { background: #E24B4A; }
@@ -59,20 +66,163 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* Admin */
 .admin-card { background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-.admin-card h2 { font-size: 14px; font-weight: 500; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.admin-card h2 { font-size: 14px; font-weight: 500; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+
+/* Wrapper auto autour des tables pour scroll horizontal sur petit écran */
+.admin-card table { display: table; width: 100%; }
+.admin-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.admin-card table { min-width: 480px; font-size: 12px; border-collapse: collapse; }
 table { width: 100%; font-size: 12px; border-collapse: collapse; }
-th { text-align: left; color: #9c9a92; font-weight: 500; padding: 6px 8px; border-bottom: 0.5px solid #dddcd6; font-size: 11px; text-transform: uppercase; }
+th { text-align: left; color: #9c9a92; font-weight: 500; padding: 6px 8px; border-bottom: 0.5px solid #dddcd6; font-size: 11px; text-transform: uppercase; white-space: nowrap; }
 td { padding: 8px; border-bottom: 0.5px solid #f0efea; color: #1a1a18; vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
+
+/* Sur très petit écran, les tables avec class .responsive-table se transforment en cartes empilées */
+@media (max-width: 600px) {
+  .admin-card { overflow-x: visible; }
+  table.responsive-table { min-width: 0; display: block; }
+  table.responsive-table thead { display: none; }  /* on cache les en-têtes : data-label les remplace */
+  table.responsive-table tbody { display: block; }
+  table.responsive-table tr { display: block; background: #fafaf8; border: 0.5px solid #dddcd6; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  table.responsive-table td { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 5px 0; border-bottom: 0.5px solid #f0efea; text-align: right; }
+  table.responsive-table td:last-child { border-bottom: none; }
+  table.responsive-table td::before {
+    content: attr(data-label);
+    font-size: 10px; color: #9c9a92; text-transform: uppercase; letter-spacing: 0.05em;
+    font-weight: 500; flex-shrink: 0; text-align: left;
+  }
+  /* Les cellules d'actions (boutons) restent groupées à droite */
+  table.responsive-table td.actions-cell { justify-content: flex-end; }
+  table.responsive-table td.actions-cell::before { display: none; }
+}
 .btn-sm { font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 0.5px solid #dddcd6; background: #fff; cursor: pointer; color: #5F5E5A; }
 .btn-danger { border-color: #F09595; color: #A32D2D; }
 .btn-add { font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 0.5px solid #5DCAA5; background: #E1F5EE; color: #085041; cursor: pointer; font-weight: 500; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .form-row .form-field[style*="span 2"] { grid-column: auto !important; }
+}
 .form-field { display: flex; flex-direction: column; gap: 4px; }
 .form-field label { font-size: 11px; color: #5F5E5A; font-weight: 500; }
 .form-field input, .form-field select { font-size: 12px; padding: 6px 8px; border: 0.5px solid #dddcd6; border-radius: 8px; }
 .form-wrap { background: #f5f4f0; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: none; }
 .checkbox { width: 16px; height: 16px; cursor: pointer; }
+
+/* ============ HOME - Intranet EMS ============ */
+
+/* Hero bienvenue */
+.home-hero { padding-top: 24px; padding-bottom: 8px; }
+.home-hero-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; color: #1a1a18; margin-bottom: 4px; }
+.home-hero-subtitle { font-size: 13px; color: #9c9a92; margin-bottom: 20px; }
+.home-hero-date { font-size: 11px; color: #b4b2a9; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; font-weight: 500; }
+
+/* Top grid : carousel (3/4) + favoris (1/4), même hauteur */
+.home-top-grid { display: grid; grid-template-columns: 3fr 1fr; gap: 20px; margin-bottom: 32px; }
+@media (max-width: 900px) { .home-top-grid { grid-template-columns: 1fr; } }
+
+/* Carousel article phare - HAUTEUR FIXE pour que les images n'influent pas sur la taille */
+.featured-carousel { position: relative; height: 380px; background: #fff; border: 0.5px solid #dddcd6; border-radius: 16px; overflow: hidden; }
+.featured-carousel-inner { position: relative; height: 100%; }
+.featured-slide { display: none; height: 100%; }
+.featured-slide.active { display: grid; }
+.featured-slide { grid-template-columns: 1fr 1fr; }
+@media (max-width: 760px) { .featured-slide { grid-template-columns: 1fr; grid-template-rows: 180px 1fr; } }
+.featured-image { background: #fafaf8; position: relative; overflow: hidden; height: 100%; }
+.featured-image img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 20px; box-sizing: border-box; }
+.featured-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 60px; background: linear-gradient(135deg, #E1F5EE 0%, #A8E0CA 100%); color: #0F6E56; }
+.featured-body { padding: 36px 40px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.featured-category { font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #1D9E75; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 6px; }
+.featured-category::before { content: ''; width: 20px; height: 2px; background: #1D9E75; display: inline-block; }
+.featured-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: #1a1a18; line-height: 1.25; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.featured-excerpt { font-size: 13px; color: #5F5E5A; line-height: 1.5; margin-bottom: 18px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
+.featured-meta { font-size: 11px; color: #9c9a92; flex-shrink: 0; }
+
+/* Carte favoris à droite : même hauteur que le carousel, scroll si beaucoup d'items */
+.home-favorites-card { height: 380px; display: flex; flex-direction: column; }
+.home-favorites-card .home-card-title { flex-shrink: 0; }
+.home-favorites-card .quick-access-list { overflow-y: auto; flex: 1; margin: 0 -6px; padding: 0 6px; scrollbar-width: thin; scrollbar-color: #dddcd6 transparent; }
+.home-favorites-card .quick-access-list::-webkit-scrollbar { width: 6px; }
+.home-favorites-card .quick-access-list::-webkit-scrollbar-track { background: transparent; }
+.home-favorites-card .quick-access-list::-webkit-scrollbar-thumb { background: #dddcd6; border-radius: 3px; }
+.home-favorites-card .quick-access-list::-webkit-scrollbar-thumb:hover { background: #b4b2a9; }
+
+/* Navigation carousel */
+.carousel-controls { position: absolute; bottom: 16px; left: 40px; display: flex; gap: 8px; z-index: 2; }
+.carousel-dot { width: 24px; height: 3px; background: rgba(26,26,24,0.15); border: none; padding: 0; cursor: pointer; border-radius: 2px; transition: background 0.2s; }
+.carousel-dot.active { background: #1D9E75; }
+.carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.92); border: 0.5px solid #dddcd6; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #5F5E5A; transition: all 0.2s; z-index: 2; }
+.carousel-arrow:hover { background: #fff; color: #1a1a18; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.carousel-arrow.prev { left: 12px; }
+.carousel-arrow.next { right: 12px; }
+
+/* Grilles et sections */
+.home-section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; margin-top: 32px; }
+.home-section-title { font-size: 16px; font-weight: 700; color: #1a1a18; letter-spacing: -0.01em; }
+.home-section-link { font-size: 12px; color: #1D9E75; text-decoration: none; font-weight: 500; }
+.home-section-link:hover { text-decoration: underline; }
+
+/* Grille actualités secondaires */
+.news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.news-card { background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s; }
+.news-card:hover { border-color: #b4b2a9; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+.news-card-image { aspect-ratio: 16/9; background: #f5f4f0; overflow: hidden; position: relative; }
+.news-card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.news-card-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 32px; background: linear-gradient(135deg, #f5f4f0 0%, #e8e6de 100%); color: #b4b2a9; }
+.news-card-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; }
+.news-card-category { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1D9E75; margin-bottom: 8px; }
+.news-card-title { font-size: 15px; font-weight: 600; line-height: 1.3; color: #1a1a18; margin-bottom: 8px; letter-spacing: -0.005em; }
+.news-card-excerpt { font-size: 12px; color: #5F5E5A; line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
+.news-card-meta { font-size: 11px; color: #9c9a92; display: flex; align-items: center; gap: 8px; }
+.news-card-meta-dot { width: 2px; height: 2px; border-radius: 50%; background: #b4b2a9; }
+
+/* Carte home générique */
+.home-card { background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; padding: 22px 24px; }
+.home-card-title { font-size: 13px; font-weight: 700; color: #1a1a18; margin-bottom: 16px; letter-spacing: -0.005em; display: flex; align-items: center; gap: 10px; }
+.home-card-title::before { content: ''; width: 3px; height: 14px; background: #1D9E75; border-radius: 2px; }
+.company-header { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 14px; }
+.company-logo { width: 52px; height: 52px; border-radius: 12px; object-fit: contain; background: #f5f4f0; padding: 8px; flex-shrink: 0; }
+.company-name { font-size: 16px; font-weight: 700; color: #1a1a18; margin-bottom: 4px; letter-spacing: -0.005em; }
+.company-desc { font-size: 13px; color: #5F5E5A; line-height: 1.55; }
+.company-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; font-size: 12px; color: #5F5E5A; padding-top: 14px; margin-top: 14px; border-top: 0.5px solid #f0efea; }
+@media (max-width: 600px) { .company-meta { grid-template-columns: 1fr; } }
+.company-meta-item { display: flex; align-items: center; gap: 8px; }
+.company-meta-item .mi { color: #9c9a92; flex-shrink: 0; }
+.company-meta-item a { color: #185FA5; text-decoration: none; }
+.company-meta-item a:hover { text-decoration: underline; }
+
+/* Accès rapide (favoris) mini */
+.quick-access-list { display: flex; flex-direction: column; gap: 4px; }
+.quick-access-item { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 8px; cursor: pointer; color: #1a1a18; text-decoration: none; font-size: 13px; transition: background 0.15s; }
+.quick-access-item:hover { background: #f5f4f0; }
+.quick-access-item-icon { width: 28px; height: 28px; border-radius: 8px; background: #f5f4f0; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.quick-access-item-icon img { width: 24px; height: 24px; object-fit: contain; }
+.quick-access-item-name { flex: 1; font-weight: 500; }
+.quick-access-item-tag { font-size: 10px; color: #9c9a92; }
+.quick-access-empty { font-size: 12px; color: #9c9a92; padding: 8px; }
+
+/* Admin - catégorie badge dans les annonces */
+.cat-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.05em; background: #f0efea; color: #5F5E5A; }
+.cat-badge.info { background: #E6F1FB; color: #185FA5; }
+.cat-badge.alerte { background: #FAECE7; color: #993C1D; }
+.cat-badge.evenement { background: #F3E8FB; color: #5B2A7F; }
+.cat-badge.rh { background: #E1F5EE; color: #0F6E56; }
+
+/* Sidebar admin */
+.admin-layout { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
+.admin-sidebar { position: sticky; top: 24px; background: #fff; border: 0.5px solid #dddcd6; border-radius: 12px; padding: 8px; }
+@media (max-width: 900px) {
+  .admin-layout { grid-template-columns: 1fr; gap: 16px; }
+  .admin-sidebar { position: relative; top: 0; display: flex; gap: 4px; padding: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .admin-nav-item { white-space: nowrap; flex-shrink: 0; padding: 8px 14px; font-size: 12px; }
+}
+.admin-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: #5F5E5A; font-weight: 500; transition: all 0.15s; user-select: none; }
+.admin-nav-item:hover { background: #f5f4f0; color: #1a1a18; }
+.admin-nav-item.active { background: #E1F5EE; color: #0F6E56; font-weight: 600; }
+.admin-nav-item-icon { width: 18px; text-align: center; font-size: 14px; }
+.admin-content > .admin-card { margin-bottom: 0; }
+.admin-content > .admin-card:not(.active) { display: none; }
+
 </style>
 </head>
 <body>
@@ -143,9 +293,9 @@ tr:last-child td { border-bottom: none; }
 <div id="app-page">
   <div class="topbar">
     <div class="logo"><span class="logo-dot"></span> AppHub</div>
-    <div class="search-wrap">
+    <div class="search-wrap" id="search-wrap">
       <span class="search-icon">⌕</span>
-      <input type="text" placeholder="Rechercher..." oninput="renderCatalog()">
+      <input type="text" id="search-input" placeholder="Rechercher..." oninput="renderCatalog()">
     </div>
     <div class="user-info">
       <span id="username-display"></span>
@@ -154,14 +304,41 @@ tr:last-child td { border-bottom: none; }
     </div>
   </div>
   <div class="tabs">
-    <div class="tab active" id="tab-catalog" onclick="showTab('catalog')">Catalogue</div>
+    <div class="tab active" id="tab-home" onclick="showTab('home')">Accueil</div>
+    <div class="tab" id="tab-catalog" onclick="showTab('catalog')">Catalogue</div>
     <div class="tab" id="tab-admin" onclick="showTab('admin')">Administration</div>
     <div class="tab" id="tab-audit" onclick="showTab('audit')">Audit</div>
   </div>
   <div class="content">
 
+    <!-- ACCUEIL -->
+    <div id="view-home">
+
+      <!-- Hero : bienvenue -->
+      <div class="home-hero">
+        <div class="home-hero-date" id="home-hero-date"></div>
+        <div class="home-hero-title" id="home-welcome"></div>
+        <div class="home-hero-subtitle">Votre portail d'applications et d'actualités</div>
+      </div>
+
+      <!-- Top grid : carousel (3/4) + favoris (1/4) -->
+      <div class="home-top-grid">
+        <div class="featured-carousel" id="featured-carousel" style="display:none;">
+          <div class="featured-carousel-inner" id="featured-slides"></div>
+          <button class="carousel-arrow prev" onclick="carouselPrev()" aria-label="Précédent">‹</button>
+          <button class="carousel-arrow next" onclick="carouselNext()" aria-label="Suivant">›</button>
+          <div class="carousel-controls" id="carousel-dots"></div>
+        </div>
+        <div class="home-card home-favorites-card">
+          <div class="home-card-title">Accès rapide</div>
+          <div id="home-quick-access" class="quick-access-list"></div>
+        </div>
+      </div>
+
+    </div>
+
     <!-- CATALOGUE -->
-    <div id="view-catalog">
+    <div id="view-catalog" style="display:none;">
       <div class="tags-bar" id="tags-bar"></div>
       <div class="section-label">Favoris</div>
       <div class="apps-grid" id="fav-grid"></div>
@@ -170,7 +347,76 @@ tr:last-child td { border-bottom: none; }
 
     <!-- ADMIN -->
     <div id="view-admin" style="display:none">
-      <div class="admin-card">
+      <div class="admin-layout">
+
+        <!-- Sidebar de navigation admin -->
+        <nav class="admin-sidebar">
+          <div class="admin-nav-item active" data-section="announcements" onclick="showAdminSection('announcements')">
+            <span class="admin-nav-item-icon">📢</span> Annonces
+          </div>
+          <div class="admin-nav-item" data-section="apps" onclick="showAdminSection('apps')">
+            <span class="admin-nav-item-icon">📦</span> Applications
+          </div>
+          <div class="admin-nav-item" data-section="categories" onclick="showAdminSection('categories')">
+            <span class="admin-nav-item-icon">🗂️</span> Catégories
+          </div>
+          <div class="admin-nav-item" data-section="permissions" onclick="showAdminSection('permissions')">
+            <span class="admin-nav-item-icon">🔐</span> Permissions
+          </div>
+          <div class="admin-nav-item" data-section="users" onclick="showAdminSection('users')">
+            <span class="admin-nav-item-icon">👥</span> Utilisateurs
+          </div>
+        </nav>
+
+        <!-- Contenu admin (sections affichées une à la fois) -->
+        <div class="admin-content">
+
+      <div class="admin-card active" id="admin-section-announcements">
+        <h2>Annonces <button class="btn-add" onclick="toggleAnnouncementForm()">+ Publier</button></h2>
+        <div class="form-wrap" id="add-announcement-form">
+          <div class="form-row">
+            <div class="form-field" style="grid-column: span 2;">
+              <label>Titre</label>
+              <input id="a-title" type="text" placeholder="Maintenance prévue, nouveauté...">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Catégorie</label>
+              <select id="a-category">
+                <option value="Info">Info</option>
+                <option value="Alerte">Alerte</option>
+                <option value="Événement">Événement</option>
+                <option value="RH">RH</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label style="margin-top:18px;display:flex;align-items:center;gap:10px;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+                  <input type="checkbox" id="a-featured" class="checkbox"> En vedette
+                </label>
+              </label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field" style="grid-column: span 2;">
+              <label>Contenu</label>
+              <textarea id="a-content" rows="4" placeholder="Détails de l'annonce..." style="font-size:12px;padding:6px 8px;border:0.5px solid #dddcd6;border-radius:8px;resize:vertical;font-family:inherit;"></textarea>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn-sm" onclick="toggleAnnouncementForm()">Annuler</button>
+            <button class="btn-add" onclick="createAnnouncement()">Publier</button>
+          </div>
+          <div style="font-size:11px;color:#9c9a92;margin-top:8px;">Vous pourrez ajouter une image après la publication.</div>
+        </div>
+        <table class="responsive-table">
+          <thead><tr><th>Titre</th><th>Catégorie</th><th>Date</th><th>En vedette</th><th>Visible</th><th>Actions</th></tr></thead>
+          <tbody id="announcements-list"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-card" id="admin-section-apps">
         <h2>Applications <button class="btn-add" onclick="toggleForm()">+ Ajouter</button></h2>
         <div class="form-wrap" id="add-form">
           <div class="form-row">
@@ -179,11 +425,10 @@ tr:last-child td { border-bottom: none; }
           </div>
           <div class="form-row">
             <div class="form-field"><label>Icône</label><input id="f-icon" type="text" placeholder="📦"></div>
-            <div class="form-field"><label>Tag</label>
-              <select id="f-tag">
-                <option>Général</option><option>RH</option><option>Finance</option>
-                <option>IT</option><option>Commercial</option>
-              </select>
+            <div class="form-field">
+              <label>Catégorie</label>
+              <input id="f-tag" type="text" list="f-tag-list" placeholder="ex: Finance, RH, IT...">
+              <datalist id="f-tag-list"></datalist>
             </div>
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -191,12 +436,34 @@ tr:last-child td { border-bottom: none; }
             <button class="btn-add" onclick="createApp()">Enregistrer</button>
           </div>
         </div>
-        <table>
+        <table class="responsive-table">
           <thead><tr><th>App</th><th>URL</th><th>Tag</th><th>Statut</th><th></th></tr></thead>
           <tbody id="admin-apps-list"></tbody>
         </table>
       </div>
-      <div class="admin-card">
+
+      <div class="admin-card" id="admin-section-categories">
+        <h2>Catégories d'applications <button class="btn-add" onclick="toggleCategoryForm()">+ Ajouter</button></h2>
+        <div class="form-wrap" id="add-category-form">
+          <div class="form-row">
+            <div class="form-field" style="grid-column: span 2;">
+              <label>Nom de la catégorie</label>
+              <input id="f-category-name" type="text" placeholder="ex: Production, Qualité, Logistique...">
+            </div>
+          </div>
+          <div style="font-size:11px;color:#9c9a92;margin-bottom:8px;">Une catégorie sans application rattachée sera créée vide — vous pourrez l'attribuer à des apps ensuite.</div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn-sm" onclick="toggleCategoryForm()">Annuler</button>
+            <button class="btn-add" onclick="createCategory()">Créer</button>
+          </div>
+        </div>
+        <table class="responsive-table">
+          <thead><tr><th>Nom</th><th>Applications</th><th>Actions</th></tr></thead>
+          <tbody id="categories-list"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-card" id="admin-section-permissions">
         <h2>Rôles <button class="btn-add" onclick="toggleRoleForm()">+ Ajouter</button></h2>
         <div class="form-wrap" id="add-role-form">
           <div class="form-row">
@@ -210,19 +477,18 @@ tr:last-child td { border-bottom: none; }
             <button class="btn-add" onclick="createRole()">Enregistrer</button>
           </div>
         </div>
-        <table>
+        <table class="responsive-table">
           <thead><tr><th>Nom</th><th>Type</th><th>Utilisateurs</th><th></th></tr></thead>
           <tbody id="roles-list"></tbody>
         </table>
-      </div>
-      <div class="admin-card">
-        <h2>Matrice des droits</h2>
+
+        <h2 style="margin-top:24px;">Matrice des droits</h2>
         <table>
           <thead><tr id="permissions-header"><th>Application</th></tr></thead>
           <tbody id="permissions-matrix"></tbody>
         </table>
       </div>
-      <div class="admin-card">
+      <div class="admin-card" id="admin-section-users">
         <h2>Utilisateurs <button class="btn-add" onclick="toggleUserForm()">+ Ajouter</button></h2>
         <div class="form-wrap" id="add-user-form">
           <div class="form-row">
@@ -255,18 +521,21 @@ tr:last-child td { border-bottom: none; }
             <option value="">Tous les rôles</option>
           </select>
         </div>
-        <table>
+        <table class="responsive-table">
           <thead><tr><th>Identifiant</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Actions</th></tr></thead>
           <tbody id="users-list"></tbody>
         </table>
       </div>
+
+        </div><!-- /.admin-content -->
+      </div><!-- /.admin-layout -->
     </div>
 
     <!-- AUDIT -->
     <div id="view-audit" style="display:none">
       <div class="admin-card">
         <h2>Journal d'audit</h2>
-        <table>
+        <table class="responsive-table">
           <thead><tr><th>Utilisateur</th><th>Action</th><th>Détail</th><th>Date</th></tr></thead>
           <tbody id="audit-list"></tbody>
         </table>
@@ -320,6 +589,89 @@ tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+<!-- MODAL : édition d'application -->
+<div id="app-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1002;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:24px;width:480px;max-width:92vw;max-height:90vh;overflow-y:auto;">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:16px;">Modifier l'application</h2>
+    <div class="form-row">
+      <div class="form-field"><label>Nom</label><input id="e-app-name" type="text"></div>
+      <div class="form-field"><label>URL</label><input id="e-app-url" type="text"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Icône (emoji)</label>
+        <input id="e-app-icon" type="text" placeholder="📦">
+      </div>
+      <div class="form-field">
+        <label>Catégorie</label>
+        <input id="e-app-tag" type="text" list="app-tags-list" placeholder="ex: Finance, RH...">
+        <datalist id="app-tags-list"></datalist>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field" style="grid-column: span 2;">
+        <label>Description</label>
+        <textarea id="e-app-description" rows="2" style="font-size:12px;padding:6px 8px;border:0.5px solid #dddcd6;border-radius:8px;resize:vertical;font-family:inherit;"></textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-top:18px;">
+          <input type="checkbox" id="e-app-online" class="checkbox"> Application en ligne
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn-sm" onclick="closeAppEditModal()">Annuler</button>
+      <button class="btn-add" onclick="saveAppEdit()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : édition d'annonce -->
+<div id="announcement-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1002;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:24px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:16px;">Modifier l'annonce</h2>
+    <div class="form-row">
+      <div class="form-field" style="grid-column: span 2;">
+        <label>Titre</label>
+        <input id="e-ann-title" type="text">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Catégorie</label>
+        <select id="e-ann-category">
+          <option value="Info">Info</option>
+          <option value="Alerte">Alerte</option>
+          <option value="Événement">Événement</option>
+          <option value="RH">RH</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label style="margin-top:18px;display:flex;align-items:center;gap:12px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+            <input type="checkbox" id="e-ann-featured" class="checkbox"> En vedette
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+            <input type="checkbox" id="e-ann-breaking" class="checkbox"> À la une
+          </label>
+        </label>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field" style="grid-column: span 2;">
+        <label>Contenu</label>
+        <textarea id="e-ann-content" rows="6" style="font-size:12px;padding:6px 8px;border:0.5px solid #dddcd6;border-radius:8px;resize:vertical;font-family:inherit;"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn-sm" onclick="closeAnnouncementEditModal()">Annuler</button>
+      <button class="btn-add" onclick="saveAnnouncementEdit()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const API = '';  // Même origine que la page (http://127.0.0.1:8000 en dev, https://catalog.ems.fr en prod)
 
@@ -329,6 +681,7 @@ let allApps = [];
 let activeTag = null;
 let allUsers = [];
 let allRoles = [];
+let allAppsAdmin = [];  // toutes les apps complètes (vue admin)
 
 // Vérifier si déjà connecté au chargement.
 // Le cookie est httponly : JS ne peut PAS le lire via document.cookie.
@@ -457,7 +810,7 @@ async function login() {
     document.getElementById('tab-audit').style.display = 'none';
   }
   await loadApps();
-  showTab('catalog');  // après login, toujours atterrir sur le catalogue
+  showTab('home');  // après login, atterrir sur la page d'accueil
   if (currentUser.must_change_password) openForcePwModal();
 }
 
@@ -542,9 +895,8 @@ function makeTile(app) {
   return `<div class="tile" title="${app.url}" onclick="window.open('${app.url}', '_blank')">
     <button class="tile-fav ${app.favorite ? 'active' : ''}" onclick="toggleFav(${app.id}, event)">${app.favorite ? '★' : '☆'}</button>
     <div class="tile-status ${app.online ? 'status-on' : 'status-off'}"></div>
-    <div class="tile-icon">${renderIcon(app.icon, 22)}</div>
+    <div class="tile-icon">${renderIcon(app.icon, 28)}</div>
     <div class="tile-name">${app.name}</div>
-    <div class="tile-tag">${app.tag}</div>
   </div>`;
 }
 
@@ -559,11 +911,33 @@ async function toggleFav(appId, e) {
 
 // -- Tabs
 function showTab(tab, updateHash = true) {
-  ['catalog', 'admin', 'audit'].forEach(t => {
-    document.getElementById('view-' + t).style.display = t === tab ? 'block' : 'none';
+  ['home', 'catalog', 'admin', 'audit'].forEach(t => {
+    const el = document.getElementById('view-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
     document.getElementById('tab-' + t)?.classList.toggle('active', t === tab);
   });
-  if (tab === 'admin') loadAdmin();
+
+  // La barre de recherche n'a de sens que dans le catalogue
+  const searchWrap = document.getElementById('search-wrap');
+  if (searchWrap) {
+    searchWrap.style.visibility = tab === 'catalog' ? 'visible' : 'hidden';
+    // Vider la recherche quand on quitte le catalogue, pour éviter qu'au retour le filtre
+    // soit toujours appliqué de manière invisible
+    if (tab !== 'catalog') {
+      const input = document.getElementById('search-input');
+      if (input) input.value = '';
+    }
+  }
+
+  if (tab === 'home') loadHome();
+  if (tab === 'admin') {
+    loadAdmin();
+    loadAnnouncementsAdmin();
+    loadCategories();
+    // Restaurer la dernière section consultée (par défaut Annonces)
+    const savedSection = (() => { try { return sessionStorage.getItem('admin_section'); } catch (e) { return null; } })();
+    showAdminSection(savedSection || 'announcements');
+  }
   if (tab === 'audit') loadAudit();
 
   // Persister l'onglet dans l'URL (sans recharger la page)
@@ -575,7 +949,7 @@ function showTab(tab, updateHash = true) {
 // Restaurer l'onglet actif depuis le hash de l'URL au chargement
 function restoreTab() {
   const hash = (window.location.hash || '').replace('#', '');
-  const valid = ['catalog', 'admin', 'audit'];
+  const valid = ['home', 'catalog', 'admin', 'audit'];
   // Vérifier que le tab existe ET est visible pour l'user (admin/audit cachés pour collab)
   if (valid.includes(hash)) {
     const tabEl = document.getElementById('tab-' + hash);
@@ -584,13 +958,27 @@ function restoreTab() {
       return;
     }
   }
-  showTab('catalog', false);
+  showTab('home', false);  // page d'accueil par défaut
 }
 
 // -- Admin
 function toggleForm() {
   const f = document.getElementById('add-form');
   f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+// Naviguer entre les sections de l'admin (sidebar latérale)
+function showAdminSection(section) {
+  // Mettre à jour la sidebar
+  document.querySelectorAll('.admin-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.section === section);
+  });
+  // Afficher seulement la section correspondante
+  document.querySelectorAll('.admin-content > .admin-card').forEach(el => {
+    el.classList.toggle('active', el.id === `admin-section-${section}`);
+  });
+  // Mémoriser la section pour les prochains chargements admin
+  try { sessionStorage.setItem('admin_section', section); } catch (e) {}
 }
 
 async function loadAdmin() {
@@ -611,7 +999,8 @@ async function loadAdmin() {
     fetch(`${API}/api/admin/users`, { credentials: 'include' }),
     fetch(`${API}/api/admin/roles`, { credentials: 'include' }),
   ]);
-  const apps = await appsRes.json();
+  allAppsAdmin = await appsRes.json();
+  const apps = allAppsAdmin;
   const perms = await permsRes.json();
   allUsers = await usersRes.json();
   allRoles = await rolesRes.json();
@@ -619,16 +1008,25 @@ async function loadAdmin() {
   // Table apps
   document.getElementById('admin-apps-list').innerHTML = apps.map(a => `
     <tr>
-      <td>${renderIcon(a.icon, 18)} ${a.name}</td>
-      <td style="color:#9c9a92;font-size:11px;">${a.url}</td>
-      <td>${a.tag}</td>
-      <td><span style="color:${a.online ? '#0F6E56' : '#A32D2D'}">${a.online ? 'En ligne' : 'Hors ligne'}</span></td>
-      <td style="white-space:nowrap;">
+      <td data-label="App">${renderIcon(a.icon, 18)} ${escapeHtml(a.name)}</td>
+      <td data-label="URL" style="color:#9c9a92;font-size:11px;word-break:break-all;">${escapeHtml(a.url)}</td>
+      <td data-label="Tag">${escapeHtml(a.tag)}</td>
+      <td data-label="Statut"><span style="color:${a.online ? '#0F6E56' : '#A32D2D'}">${a.online ? 'En ligne' : 'Hors ligne'}</span></td>
+      <td class="actions-cell" style="white-space:nowrap;">
+        <button class="btn-sm" onclick="openAppEditModal(${a.id})" title="Modifier">✎</button>
         <button class="btn-sm" onclick="document.getElementById('logo-input-${a.id}').click()" title="Uploader un logo">🖼️</button>
         <input type="file" id="logo-input-${a.id}" style="display:none" accept="image/*" onchange="uploadLogo(${a.id}, this)">
-        <button class="btn-sm btn-danger" onclick="deleteApp(${a.id})">Supprimer</button>
+        <button class="btn-sm btn-danger" onclick="deleteApp(${a.id})" title="Supprimer">×</button>
       </td>
     </tr>`).join('');
+
+  // Remplir la datalist des catégories pour le formulaire de création d'app
+  // (fusion : tags utilisés par les apps + catégories enregistrées mais vides)
+  const categoryNames = new Set(apps.map(a => a.tag).filter(Boolean));
+  allCategories.forEach(c => categoryNames.add(c.name));
+  const existingTags = [...categoryNames].sort();
+  document.getElementById('f-tag-list').innerHTML =
+    existingTags.map(t => `<option value="${escapeHtml(t)}">`).join('');
 
   // Table rôles
   document.getElementById('roles-list').innerHTML = allRoles.map(r => {
@@ -639,10 +1037,10 @@ async function loadAdmin() {
       : (userCount > 0 ? `${userCount} utilisateur(s) utilisent ce rôle` : 'Supprimer');
     return `
       <tr data-role="${r.name}">
-        <td><span class="role-badge role-${r.name}">${r.name}</span></td>
-        <td style="color:#9c9a92;font-size:11px;">${r.is_system ? 'Système' : 'Personnalisé'}</td>
-        <td>${userCount}</td>
-        <td>
+        <td data-label="Nom"><span class="role-badge role-${r.name}">${r.name}</span></td>
+        <td data-label="Type" style="color:#9c9a92;font-size:11px;">${r.is_system ? 'Système' : 'Personnalisé'}</td>
+        <td data-label="Utilisateurs">${userCount}</td>
+        <td class="actions-cell">
           <button class="btn-sm btn-danger"
                   onclick="deleteRole('${r.name}')"
                   title="${title}"
@@ -765,11 +1163,11 @@ function renderUsersList() {
 
     return `
     <tr${isSuper ? ' style="background:#fffbf5;"' : ''}>
-      <td>${u.username} ${badges.join(' ')}</td>
-      <td>${emailDisplay} ${emailBtn}</td>
-      <td>${roleSelect}</td>
-      <td>${statut}</td>
-      <td style="white-space:nowrap;">
+      <td data-label="Identifiant">${u.username} ${badges.join(' ')}</td>
+      <td data-label="Email" style="word-break:break-all;">${emailDisplay} ${emailBtn}</td>
+      <td data-label="Rôle">${roleSelect}</td>
+      <td data-label="Statut">${statut}</td>
+      <td class="actions-cell" style="white-space:nowrap;">
         ${resetBtn}
         ${deleteBtn}
       </td>
@@ -780,6 +1178,106 @@ function renderUsersList() {
 function toggleRoleForm() {
   const f = document.getElementById('add-role-form');
   f.style.display = f.style.display === 'none' || !f.style.display ? 'block' : 'none';
+}
+
+// ============ CATÉGORIES D'APPS ============
+
+let allCategories = [];
+
+function toggleCategoryForm() {
+  const f = document.getElementById('add-category-form');
+  f.style.display = f.style.display === 'none' || !f.style.display ? 'block' : 'none';
+}
+
+async function loadCategories() {
+  const res = await fetch(`${API}/api/admin/categories`, { credentials: 'include' });
+  if (!res.ok) return;
+  allCategories = await res.json();
+  renderCategoriesList();
+}
+
+function renderCategoriesList() {
+  const tbody = document.getElementById('categories-list');
+  if (!tbody) return;
+  if (allCategories.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#9c9a92;padding:16px;">Aucune catégorie. Elles apparaîtront ici dès qu\'une app en utilise, ou cliquez sur "+ Ajouter".</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allCategories.map(c => {
+    const isDefault = c.name === 'Général';
+    return `
+      <tr>
+        <td data-label="Nom"><strong>${escapeHtml(c.name)}</strong>${isDefault ? ' <span style="font-size:10px;color:#9c9a92;">(par défaut)</span>' : ''}</td>
+        <td data-label="Applications"><span style="font-size:11px;color:#5F5E5A;">${c.app_count} app${c.app_count > 1 ? 's' : ''}</span></td>
+        <td class="actions-cell" style="white-space:nowrap;">
+          <button class="btn-sm" onclick="renameCategory('${c.name.replace(/'/g, "\\'")}')" title="Renommer">✎</button>
+          <button class="btn-sm btn-danger" onclick="deleteCategory('${c.name.replace(/'/g, "\\'")}')"
+                  ${isDefault ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}
+                  title="${isDefault ? 'Catégorie par défaut, non supprimable' : 'Supprimer'}">×</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+async function createCategory() {
+  const name = document.getElementById('f-category-name').value.trim();
+  if (!name) { alert('Nom requis'); return; }
+  const res = await fetch(`${API}/api/admin/categories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur : ' + (err.detail || 'création impossible'));
+    return;
+  }
+  document.getElementById('f-category-name').value = '';
+  toggleCategoryForm();
+  loadCategories();
+}
+
+async function renameCategory(oldName) {
+  const newName = prompt(`Renommer la catégorie "${oldName}" en :`, oldName);
+  if (!newName || newName.trim() === oldName) return;
+  const res = await fetch(`${API}/api/admin/categories/${encodeURIComponent(oldName)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ new_name: newName.trim() }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur : ' + (err.detail || 'renommage impossible'));
+    return;
+  }
+  const data = await res.json();
+  if (data.apps_updated > 0) {
+    alert(`Catégorie renommée. ${data.apps_updated} application(s) mises à jour.`);
+  }
+  loadCategories();
+  loadAdmin();  // rafraîchir la table des apps qui affiche le tag
+  loadApps();   // rafraîchir aussi le catalogue
+}
+
+async function deleteCategory(name) {
+  const cat = allCategories.find(c => c.name === name);
+  const message = cat && cat.app_count > 0
+    ? `Supprimer la catégorie "${name}" ?\n${cat.app_count} application(s) seront réassignées à "Général".`
+    : `Supprimer la catégorie "${name}" ?`;
+  if (!confirm(message)) return;
+  const res = await fetch(`${API}/api/admin/categories/${encodeURIComponent(name)}`, {
+    method: 'DELETE', credentials: 'include',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur : ' + (err.detail || 'suppression impossible'));
+    return;
+  }
+  loadCategories();
+  loadAdmin();
+  loadApps();
 }
 
 async function createRole() {
@@ -1037,17 +1535,22 @@ async function submitNewPassword() {
 
 async function createApp() {
   const data = {
-    name: document.getElementById('f-name').value,
-    url: document.getElementById('f-url').value,
-    icon: document.getElementById('f-icon').value || '📦',
-    tag: document.getElementById('f-tag').value,
+    name: document.getElementById('f-name').value.trim(),
+    url: document.getElementById('f-url').value.trim(),
+    icon: document.getElementById('f-icon').value.trim() || '📦',
+    tag: document.getElementById('f-tag').value.trim() || 'Général',
   };
+  if (!data.name || !data.url) { alert('Nom et URL sont obligatoires'); return; }
   await fetch(`${API}/api/admin/apps`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(data)
   });
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-url').value = '';
+  document.getElementById('f-icon').value = '';
+  document.getElementById('f-tag').value = '';
   toggleForm();
   loadAdmin();
   loadApps();
@@ -1058,6 +1561,65 @@ async function deleteApp(id) {
   await fetch(`${API}/api/admin/apps/${id}`, { method: 'DELETE', credentials: 'include' });
   loadAdmin();
   loadApps();
+}
+
+// ----- Édition d'application -----
+function openAppEditModal(id) {
+  const app = allAppsAdmin.find(a => a.id === id);
+  if (!app) return;
+  document.getElementById('e-app-name').value = app.name || '';
+  document.getElementById('e-app-url').value = app.url || '';
+  document.getElementById('e-app-icon').value = (app.icon && app.icon.startsWith('/logos/')) ? '' : (app.icon || '');
+  document.getElementById('e-app-tag').value = app.tag || '';
+  document.getElementById('e-app-description').value = app.description || '';
+  document.getElementById('e-app-online').checked = !!app.online;
+
+  // Remplir la datalist avec les catégories existantes
+  const tags = [...new Set(allAppsAdmin.map(a => a.tag).filter(Boolean))].sort();
+  document.getElementById('app-tags-list').innerHTML =
+    tags.map(t => `<option value="${escapeHtml(t)}">`).join('');
+
+  // On stocke l'id en cours d'édition dans une variable
+  window._editingAppId = id;
+  document.getElementById('app-edit-overlay').style.display = 'flex';
+}
+
+function closeAppEditModal() {
+  document.getElementById('app-edit-overlay').style.display = 'none';
+  window._editingAppId = null;
+}
+
+async function saveAppEdit() {
+  const id = window._editingAppId;
+  if (!id) return;
+  const iconValue = document.getElementById('e-app-icon').value.trim();
+  const data = {
+    name: document.getElementById('e-app-name').value.trim(),
+    url: document.getElementById('e-app-url').value.trim(),
+    tag: document.getElementById('e-app-tag').value.trim() || 'Général',
+    description: document.getElementById('e-app-description').value.trim(),
+    online: document.getElementById('e-app-online').checked ? 1 : 0,
+  };
+  // N'écrase l'icône que si l'utilisateur a mis une valeur
+  // (sinon on garderait accidentellement l'icône actuelle, notamment un logo uploadé)
+  if (iconValue) data.icon = iconValue;
+
+  if (!data.name || !data.url) { alert('Nom et URL sont obligatoires'); return; }
+
+  const res = await fetch(`${API}/api/admin/apps/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur : ' + (err.detail || 'modification impossible'));
+    return;
+  }
+  closeAppEditModal();
+  loadAdmin();
+  loadApps();  // pour rafraîchir le catalogue aussi
 }
 
 async function togglePerm(appId, role, checked, checkboxEl) {
@@ -1125,11 +1687,457 @@ async function loadAudit() {
   const logs = await res.json();
   document.getElementById('audit-list').innerHTML = logs.map(l => `
     <tr>
-      <td><strong>${l.username || '—'}</strong></td>
-      <td><span style="font-size:10px;color:#5F5E5A;background:#f5f4f0;padding:2px 6px;border-radius:4px;">${l.action}</span></td>
-      <td>${l.detail || '-'}</td>
-      <td style="color:#9c9a92;font-size:11px;white-space:nowrap;">${l.date}</td>
+      <td data-label="Utilisateur" style="white-space:nowrap;"><strong>${l.username || '—'}</strong></td>
+      <td data-label="Action"><span style="font-size:10px;color:#5F5E5A;background:#f5f4f0;padding:2px 6px;border-radius:4px;white-space:nowrap;">${l.action}</span></td>
+      <td data-label="Détail" style="word-break:break-word;min-width:200px;">${l.detail || '-'}</td>
+      <td data-label="Date" style="color:#9c9a92;font-size:11px;white-space:nowrap;">${l.date}</td>
     </tr>`).join('');
+}
+
+// ============ PAGE ACCUEIL ============
+
+let companyInfo = {};
+let allAnnouncementsHome = [];
+let allAnnouncements = [];  // pour la vue admin
+let featuredItems = [];
+let carouselIndex = 0;
+let carouselTimer = null;
+
+async function loadHome() {
+  // Date du jour et bienvenue
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('home-hero-date').textContent = dateStr;
+  if (currentUser) {
+    const hour = now.getHours();
+    const salut = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+    document.getElementById('home-welcome').textContent = `${salut}, ${currentUser.username}`;
+  }
+
+  // Parallèle : company + annonces
+  const [companyRes, annRes] = await Promise.all([
+    fetch(`${API}/api/company`, { credentials: 'include' }),
+    fetch(`${API}/api/announcements`, { credentials: 'include' }),
+  ]);
+
+  if (companyRes.ok) companyInfo = await companyRes.json();
+  if (annRes.ok) allAnnouncementsHome = await annRes.json();
+
+  renderFeaturedCarousel();
+  renderQuickAccess();
+}
+
+// ----- Carousel d'articles phares -----
+function renderFeaturedCarousel() {
+  const carousel = document.getElementById('featured-carousel');
+  const slidesContainer = document.getElementById('featured-slides');
+  const dotsContainer = document.getElementById('carousel-dots');
+
+  featuredItems = allAnnouncementsHome.filter(a => a.featured);
+  // Fallback : si aucune annonce featured, prendre les 3 plus récentes
+  if (featuredItems.length === 0 && allAnnouncementsHome.length > 0) {
+    featuredItems = allAnnouncementsHome.slice(0, Math.min(3, allAnnouncementsHome.length));
+  }
+
+  if (featuredItems.length === 0) {
+    carousel.style.display = 'none';
+    return;
+  }
+  carousel.style.display = 'block';
+
+  slidesContainer.innerHTML = featuredItems.map((a, idx) => {
+    const imageHtml = a.image
+      ? `<img src="${API}${a.image}" alt="">`
+      : `<div class="featured-image-placeholder">${getCategoryEmoji(a.category)}</div>`;
+    const date = new Date(a.created_at);
+    const dateStr = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    return `
+      <div class="featured-slide ${idx === 0 ? 'active' : ''}" data-slide="${idx}">
+        <div class="featured-image">${imageHtml}</div>
+        <div class="featured-body">
+          <div class="featured-category">${escapeHtml(a.category || 'Info')}</div>
+          <div class="featured-title">${escapeHtml(a.title)}</div>
+          <div class="featured-excerpt">${escapeHtml(a.content)}</div>
+          <div class="featured-meta">${dateStr}${a.author ? ' · par ' + escapeHtml(a.author) : ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  dotsContainer.innerHTML = featuredItems.map((_, idx) => `
+    <button class="carousel-dot ${idx === 0 ? 'active' : ''}" onclick="carouselGoTo(${idx})" aria-label="Article ${idx + 1}"></button>
+  `).join('');
+
+  carouselIndex = 0;
+  startCarouselTimer();
+}
+
+function carouselGoTo(idx) {
+  if (featuredItems.length === 0) return;
+  carouselIndex = (idx + featuredItems.length) % featuredItems.length;
+  document.querySelectorAll('#featured-slides .featured-slide').forEach((el, i) => {
+    el.classList.toggle('active', i === carouselIndex);
+  });
+  document.querySelectorAll('#carousel-dots .carousel-dot').forEach((el, i) => {
+    el.classList.toggle('active', i === carouselIndex);
+  });
+  startCarouselTimer();
+}
+function carouselNext() { carouselGoTo(carouselIndex + 1); }
+function carouselPrev() { carouselGoTo(carouselIndex - 1); }
+function startCarouselTimer() {
+  clearTimeout(carouselTimer);
+  if (featuredItems.length > 1) {
+    carouselTimer = setTimeout(() => carouselNext(), 7000); // 7s par slide
+  }
+}
+
+// ----- Grille d'actualités -----
+function renderNewsGrid() {
+  const grid = document.getElementById('news-grid');
+  const count = document.getElementById('home-announcements-count');
+  // Exclure celles qui sont déjà dans le carousel (featured)
+  const featuredIds = new Set(featuredItems.map(a => a.id));
+  const items = allAnnouncementsHome.filter(a => !featuredIds.has(a.id)).slice(0, 9);
+
+  if (allAnnouncementsHome.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#9c9a92;font-size:13px;padding:32px;">Aucune actualité pour le moment.</div>';
+    count.textContent = '';
+    return;
+  }
+  count.textContent = `${allAnnouncementsHome.length} publication${allAnnouncementsHome.length > 1 ? 's' : ''}`;
+
+  if (items.length === 0) {
+    grid.innerHTML = '';
+    return;
+  }
+
+  grid.innerHTML = items.map(a => {
+    const imageHtml = a.image
+      ? `<img src="${API}${a.image}" alt="">`
+      : `<div class="news-card-image-placeholder">${getCategoryEmoji(a.category)}</div>`;
+    const date = new Date(a.created_at);
+    const dateStr = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    return `
+      <div class="news-card">
+        <div class="news-card-image">${imageHtml}</div>
+        <div class="news-card-body">
+          <div class="news-card-category">${escapeHtml(a.category || 'Info')}</div>
+          <div class="news-card-title">${escapeHtml(a.title)}</div>
+          <div class="news-card-excerpt">${escapeHtml(a.content)}</div>
+          <div class="news-card-meta">
+            <span>${dateStr}</span>
+            ${a.author ? `<span class="news-card-meta-dot"></span><span>${escapeHtml(a.author)}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getCategoryEmoji(cat) {
+  const map = { 'Info': 'ℹ', 'Alerte': '⚠', 'Événement': '📅', 'RH': '👥' };
+  return map[cat] || '📰';
+}
+
+// ----- Carte société -----
+function renderHomeCompany() {
+  const c = companyInfo;
+  const hasAnyInfo = c.name || c.description || c.address || c.phone || c.email || c.website || c.logo;
+
+  if (!hasAnyInfo) {
+    document.getElementById('home-company-content').innerHTML =
+      '<div style="font-size:12px;color:#9c9a92;">Les informations de la société n\'ont pas encore été renseignées. L\'administrateur peut les configurer depuis l\'onglet Administration.</div>';
+    return;
+  }
+
+  const logoHtml = c.logo
+    ? `<img class="company-logo" src="${API}${c.logo}" alt="">`
+    : '';
+
+  const meta = [];
+  if (c.address) meta.push(`<div class="company-meta-item"><span class="mi">📍</span><span>${escapeHtml(c.address)}</span></div>`);
+  if (c.phone)   meta.push(`<div class="company-meta-item"><span class="mi">☎</span><a href="tel:${escapeHtml(c.phone)}">${escapeHtml(c.phone)}</a></div>`);
+  if (c.email)   meta.push(`<div class="company-meta-item"><span class="mi">✉</span><a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a></div>`);
+  if (c.website) meta.push(`<div class="company-meta-item"><span class="mi">🌐</span><a href="${escapeHtml(c.website)}" target="_blank" rel="noopener">${escapeHtml(c.website)}</a></div>`);
+
+  document.getElementById('home-company-content').innerHTML = `
+    <div class="company-header">
+      ${logoHtml}
+      <div style="flex:1;">
+        ${c.name ? `<div class="company-name">${escapeHtml(c.name)}</div>` : ''}
+        ${c.description ? `<div class="company-desc">${escapeHtml(c.description)}</div>` : ''}
+      </div>
+    </div>
+    ${meta.length ? `<div class="company-meta">${meta.join('')}</div>` : ''}
+  `;
+}
+
+// ----- Accès rapide (favoris, liste verticale compacte) -----
+function renderQuickAccess() {
+  const favs = (allApps || []).filter(a => a.favorite);
+  const container = document.getElementById('home-quick-access');
+  if (favs.length === 0) {
+    container.innerHTML = '<div class="quick-access-empty">Aucun favori. Épinglez une app avec ☆ dans le catalogue.</div>';
+    return;
+  }
+  container.innerHTML = favs.map(app => {
+    const iconHtml = (app.icon && app.icon.startsWith('/logos/'))
+      ? `<img src="${API}${app.icon}" alt="">`
+      : (app.icon || '📦');
+    return `
+      <a href="${escapeHtml(app.url)}" target="_blank" rel="noopener" class="quick-access-item">
+        <div class="quick-access-item-icon">${iconHtml}</div>
+        <div class="quick-access-item-name">${escapeHtml(app.name)}</div>
+        <div class="quick-access-item-tag">${escapeHtml(app.tag || '')}</div>
+      </a>
+    `;
+  }).join('');
+}
+
+// Helper : échapper le HTML
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// ============ ADMIN : INFOS SOCIÉTÉ ============
+
+async function loadCompanyForm() {
+  const res = await fetch(`${API}/api/company`, { credentials: 'include' });
+  if (!res.ok) return;
+  const c = await res.json();
+  document.getElementById('c-name').value        = c.name || '';
+  document.getElementById('c-website').value     = c.website || '';
+  document.getElementById('c-phone').value       = c.phone || '';
+  document.getElementById('c-email').value       = c.email || '';
+  document.getElementById('c-address').value     = c.address || '';
+  document.getElementById('c-description').value = c.description || '';
+  const preview = document.getElementById('c-logo-preview');
+  if (c.logo) {
+    preview.innerHTML = `<img src="${API}${c.logo}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;vertical-align:middle;">`;
+  } else {
+    preview.textContent = 'Aucun logo';
+  }
+}
+
+async function saveCompanyInfo() {
+  const data = {
+    name:        document.getElementById('c-name').value.trim(),
+    website:     document.getElementById('c-website').value.trim(),
+    phone:       document.getElementById('c-phone').value.trim(),
+    email:       document.getElementById('c-email').value.trim(),
+    address:     document.getElementById('c-address').value.trim(),
+    description: document.getElementById('c-description').value.trim(),
+  };
+  const res = await fetch(`${API}/api/admin/company`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur : ' + (err.detail || 'enregistrement impossible'));
+    return;
+  }
+  alert('Infos société mises à jour.');
+}
+
+async function uploadCompanyLogo(inputEl) {
+  const file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Fichier trop lourd (max 2 Mo)');
+    inputEl.value = '';
+    return;
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API}/api/admin/company/logo`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur upload : ' + (err.detail || res.status));
+    return;
+  }
+  loadCompanyForm();
+  inputEl.value = '';
+}
+
+// ============ ADMIN : ANNONCES ============
+
+function toggleAnnouncementForm() {
+  const f = document.getElementById('add-announcement-form');
+  f.style.display = f.style.display === 'none' || !f.style.display ? 'block' : 'none';
+}
+
+async function loadAnnouncementsAdmin() {
+  const res = await fetch(`${API}/api/admin/announcements`, { credentials: 'include' });
+  if (!res.ok) return;
+  allAnnouncements = await res.json();
+  renderAnnouncementsList();
+}
+
+function renderAnnouncementsList() {
+  const tbody = document.getElementById('announcements-list');
+  if (allAnnouncements.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9c9a92;padding:16px;">Aucune annonce. Cliquez sur "+ Publier" pour en créer une.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allAnnouncements.map(a => {
+    const date = new Date(a.created_at);
+    const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const catClass = (a.category || 'info').toLowerCase().replace('é', 'e').replace('è', 'e');
+    const imgIcon = a.image ? '🖼️' : '📷';
+    return `
+      <tr>
+        <td data-label="Titre">
+          <strong>${escapeHtml(a.title)}</strong><br>
+          <span style="font-size:11px;color:#9c9a92;">${escapeHtml((a.content || '').slice(0, 80))}${a.content.length > 80 ? '...' : ''}</span>
+        </td>
+        <td data-label="Catégorie"><span class="cat-badge ${catClass}">${escapeHtml(a.category || 'Info')}</span></td>
+        <td data-label="Date" style="font-size:11px;color:#9c9a92;white-space:nowrap;">${dateStr}</td>
+        <td data-label="En vedette"><input type="checkbox" class="checkbox" ${a.featured ? 'checked' : ''} onchange="toggleAnnouncementFlag(${a.id}, 'featured', this.checked)"></td>
+        <td data-label="Visible"><input type="checkbox" class="checkbox" ${a.active ? 'checked' : ''} onchange="toggleAnnouncementFlag(${a.id}, 'active', this.checked)"></td>
+        <td class="actions-cell" style="white-space:nowrap;">
+          <button class="btn-sm" onclick="openAnnouncementEditModal(${a.id})" title="Modifier">✎</button>
+          <button class="btn-sm" onclick="document.getElementById('ann-img-${a.id}').click()" title="Ajouter une image">${imgIcon}</button>
+          <input type="file" id="ann-img-${a.id}" style="display:none" accept="image/*" onchange="uploadAnnouncementImage(${a.id}, this)">
+          <button class="btn-sm btn-danger" onclick="deleteAnnouncement(${a.id})" title="Supprimer">×</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ----- Édition d'annonce -----
+function openAnnouncementEditModal(id) {
+  const ann = allAnnouncements.find(a => a.id === id);
+  if (!ann) return;
+  document.getElementById('e-ann-title').value = ann.title || '';
+  document.getElementById('e-ann-content').value = ann.content || '';
+  document.getElementById('e-ann-category').value = ann.category || 'Info';
+  document.getElementById('e-ann-featured').checked = !!ann.featured;
+  window._editingAnnouncementId = id;
+  document.getElementById('announcement-edit-overlay').style.display = 'flex';
+}
+
+function closeAnnouncementEditModal() {
+  document.getElementById('announcement-edit-overlay').style.display = 'none';
+  window._editingAnnouncementId = null;
+}
+
+async function saveAnnouncementEdit() {
+  const id = window._editingAnnouncementId;
+  if (!id) return;
+  const data = {
+    title: document.getElementById('e-ann-title').value.trim(),
+    content: document.getElementById('e-ann-content').value.trim(),
+    category: document.getElementById('e-ann-category').value,
+    featured: document.getElementById('e-ann-featured').checked,
+  };
+  if (!data.title || !data.content) { alert('Titre et contenu obligatoires'); return; }
+  const res = await fetch(`${API}/api/admin/announcements/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur : ' + (err.detail || 'modification impossible'));
+    return;
+  }
+  closeAnnouncementEditModal();
+  loadAnnouncementsAdmin();
+}
+
+async function createAnnouncement() {
+  const title = document.getElementById('a-title').value.trim();
+  const content = document.getElementById('a-content').value.trim();
+  const category = document.getElementById('a-category').value;
+  const featured = document.getElementById('a-featured').checked;
+  if (!title) { alert('Titre requis'); return; }
+  if (!content) { alert('Contenu requis'); return; }
+
+  const res = await fetch(`${API}/api/admin/announcements`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ title, content, category, featured, active: true }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur : ' + (err.detail || 'création impossible'));
+    return;
+  }
+  document.getElementById('a-title').value = '';
+  document.getElementById('a-content').value = '';
+  document.getElementById('a-featured').checked = false;
+  toggleAnnouncementForm();
+  loadAnnouncementsAdmin();
+}
+
+async function toggleAnnouncementFlag(id, field, value) {
+  const body = {};
+  body[field] = value;
+  const res = await fetch(`${API}/api/admin/announcements/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    alert('Erreur de mise à jour');
+    loadAnnouncementsAdmin();
+    return;
+  }
+  const a = allAnnouncements.find(x => x.id === id);
+  if (a) a[field] = value;
+}
+
+async function uploadAnnouncementImage(id, inputEl) {
+  const file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Fichier trop lourd (max 2 Mo)');
+    inputEl.value = '';
+    return;
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API}/api/admin/announcements/${id}/image`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Erreur upload : ' + (err.detail || res.status));
+    return;
+  }
+  loadAnnouncementsAdmin();
+  inputEl.value = '';
+}
+
+async function deleteAnnouncement(id) {
+  if (!confirm('Supprimer cette annonce ?')) return;
+  const res = await fetch(`${API}/api/admin/announcements/${id}`, {
+    method: 'DELETE', credentials: 'include'
+  });
+  if (!res.ok) {
+    alert('Erreur de suppression');
+    return;
+  }
+  loadAnnouncementsAdmin();
 }
 
 // (L'appui sur Enter sur le champ password est géré par le submit du <form>)

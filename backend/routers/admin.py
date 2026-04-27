@@ -210,6 +210,97 @@ def delete_role(name: str, admin=Depends(require_admin), db: Session = Depends(g
     db.commit()
     return {"message": "Rôle supprimé"}
 
+# ============ CATEGORIES ============
+
+class CategoryCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=50)
+
+class CategoryRename(BaseModel):
+    new_name: str = Field(..., min_length=1, max_length=50)
+
+@router.get("/categories")
+def list_categories(_admin=Depends(require_admin), db: Session = Depends(get_db)):
+    """
+    Retourne la liste combinée :
+    - Catégories enregistrées en table (même si aucune app ne les utilise encore)
+    - Catégories utilisées par des apps (même si pas en table)
+    Avec pour chacune le nombre d'apps rattachées.
+    """
+    from collections import Counter
+    registered = {c.name for c in db.query(models.Category).all()}
+    # Compter les apps par tag
+    app_tags = [a.tag for a in db.query(models.App).all() if a.tag]
+    counts = Counter(app_tags)
+    all_names = sorted(registered | set(counts.keys()))
+    return [{"name": n, "app_count": counts.get(n, 0)} for n in all_names]
+
+@router.post("/categories")
+def create_category(data: CategoryCreate, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    name = data.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Le nom ne peut pas être vide")
+    if db.query(models.Category).filter(models.Category.name == name).first():
+        raise HTTPException(status_code=400, detail="Cette catégorie existe déjà")
+    # Vérifier aussi si une app utilise déjà ce tag
+    used = db.query(models.App).filter(models.App.tag == name).first()
+    if used:
+        raise HTTPException(status_code=400, detail="Cette catégorie est déjà utilisée par une ou plusieurs applications")
+    db.add(models.Category(name=name))
+    db.add(models.AuditLog(
+        user_id=admin.id, action="create_category",
+        detail=f"{admin.username} a créé la catégorie '{name}'"
+    ))
+    db.commit()
+    return {"message": "Catégorie créée", "name": name}
+
+@router.put("/categories/{name}")
+def rename_category(name: str, data: CategoryRename, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    new_name = data.new_name.strip()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Le nouveau nom ne peut pas être vide")
+    if new_name == name:
+        return {"message": "Nom inchangé"}
+    # Vérifier qu'un autre n'a pas déjà ce nom
+    existing_cat = db.query(models.Category).filter(models.Category.name == new_name).first()
+    if existing_cat:
+        raise HTTPException(status_code=400, detail=f"La catégorie '{new_name}' existe déjà")
+    if db.query(models.App).filter(models.App.tag == new_name).first():
+        raise HTTPException(status_code=400, detail=f"Le nom '{new_name}' est déjà utilisé par des applications")
+
+    # Renommer en table (si présente)
+    cat = db.query(models.Category).filter(models.Category.name == name).first()
+    if cat:
+        cat.name = new_name
+    # Mettre à jour toutes les apps qui utilisent ce tag
+    apps_count = db.query(models.App).filter(models.App.tag == name).count()
+    db.query(models.App).filter(models.App.tag == name).update({"tag": new_name})
+
+    db.add(models.AuditLog(
+        user_id=admin.id, action="rename_category",
+        detail=f"{admin.username} a renommé la catégorie '{name}' en '{new_name}' ({apps_count} application(s) mises à jour)"
+    ))
+    db.commit()
+    return {"message": "Catégorie renommée", "apps_updated": apps_count}
+
+@router.delete("/categories/{name}")
+def delete_category(name: str, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    """Supprime la catégorie. Les apps qui l'utilisaient sont réassignées à 'Général'."""
+    if name == "Général":
+        raise HTTPException(status_code=400, detail="La catégorie 'Général' ne peut pas être supprimée (catégorie par défaut)")
+    apps_count = db.query(models.App).filter(models.App.tag == name).count()
+    db.query(models.App).filter(models.App.tag == name).update({"tag": "Général"})
+
+    cat = db.query(models.Category).filter(models.Category.name == name).first()
+    if cat:
+        db.delete(cat)
+
+    db.add(models.AuditLog(
+        user_id=admin.id, action="delete_category",
+        detail=f"{admin.username} a supprimé la catégorie '{name}' ({apps_count} application(s) réassignées à 'Général')"
+    ))
+    db.commit()
+    return {"message": "Catégorie supprimée", "apps_reassigned": apps_count}
+
 # ============ USERS ============
 
 @router.get("/users")
@@ -418,3 +509,238 @@ def get_audit(_admin=Depends(require_admin), db: Session = Depends(get_db)):
         }
         for log, username in logs
     ]
+
+# ============ COMPANY INFO ============
+
+class CompanyUpdate(BaseModel):
+    # Tous les champs sont optionnels — on met à jour seulement ceux fournis
+    name: Optional[str] = None
+    description: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+
+@router.put("/company")
+def update_company(data: CompanyUpdate, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    changes = []
+    for key, value in data.model_dump(exclude_unset=True).items():
+        existing = db.query(models.CompanyInfo).filter(models.CompanyInfo.key == key).first()
+        if existing:
+            if existing.value != value:
+                existing.value = value
+                changes.append(key)
+        else:
+            db.add(models.CompanyInfo(key=key, value=value))
+            changes.append(key)
+    if changes:
+        db.add(models.AuditLog(
+            user_id=admin.id, action="update_company",
+            detail=f"{admin.username} a mis à jour les infos société ({', '.join(changes)})"
+        ))
+    db.commit()
+    rows = db.query(models.CompanyInfo).all()
+    return {r.key: r.value for r in rows}
+
+COMPANY_LOGOS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads_storage", "company")
+
+@router.post("/company/logo")
+async def upload_company_logo(
+    file: UploadFile = File(...),
+    admin=Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    os.makedirs(COMPANY_LOGOS_DIR, exist_ok=True)
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in ALLOWED_LOGO_EXTS:
+        raise HTTPException(status_code=400, detail=f"Extension non supportée. Autorisées : {', '.join(ALLOWED_LOGO_EXTS)}")
+
+    content = await file.read()
+    if len(content) > MAX_LOGO_SIZE:
+        raise HTTPException(status_code=400, detail="Fichier trop lourd (max 2 Mo)")
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="Fichier vide")
+
+    # Supprimer l'ancien logo s'il existait
+    existing = db.query(models.CompanyInfo).filter(models.CompanyInfo.key == "logo").first()
+    if existing and existing.value and existing.value.startswith("/company-logo/"):
+        old_path = os.path.join(COMPANY_LOGOS_DIR, os.path.basename(existing.value))
+        if os.path.exists(old_path):
+            try:
+                os.remove(old_path)
+            except OSError:
+                pass
+
+    filename = f"{uuid.uuid4().hex}{ext}"
+    file_path = os.path.join(COMPANY_LOGOS_DIR, filename)
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    logo_path = f"/company-logo/{filename}"
+    if existing:
+        existing.value = logo_path
+    else:
+        db.add(models.CompanyInfo(key="logo", value=logo_path))
+
+    db.add(models.AuditLog(
+        user_id=admin.id, action="upload_company_logo",
+        detail=f"{admin.username} a mis à jour le logo de la société"
+    ))
+    db.commit()
+    return {"logo": logo_path}
+
+# ============ ANNOUNCEMENTS ============
+
+class AnnouncementCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    content: str = Field(..., min_length=1, max_length=5000)
+    category: Optional[str] = None
+    featured: bool = False
+    breaking: bool = False
+    active: bool = True
+
+class AnnouncementUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    content: Optional[str] = Field(None, min_length=1, max_length=5000)
+    category: Optional[str] = None
+    featured: Optional[bool] = None
+    breaking: Optional[bool] = None
+    active: Optional[bool] = None
+
+ANNOUNCEMENTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads_storage", "announcements")
+
+@router.get("/announcements")
+def list_all_announcements(_admin=Depends(require_admin), db: Session = Depends(get_db)):
+    """Liste TOUTES les annonces (actives et inactives) pour l'admin."""
+    items = (
+        db.query(models.Announcement, models.User.username)
+        .outerjoin(models.User, models.Announcement.author_id == models.User.id)
+        .order_by(models.Announcement.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": a.id,
+            "title": a.title,
+            "content": a.content,
+            "image": a.image,
+            "category": a.category,
+            "featured": a.featured,
+            "breaking": a.breaking,
+            "active": a.active,
+            "author": username,
+            "created_at": str(a.created_at),
+            "updated_at": str(a.updated_at),
+        }
+        for a, username in items
+    ]
+
+@router.post("/announcements")
+def create_announcement(data: AnnouncementCreate, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    announcement = models.Announcement(
+        title=data.title.strip(),
+        content=data.content.strip(),
+        category=(data.category or "Info").strip(),
+        featured=data.featured,
+        breaking=data.breaking,
+        active=data.active,
+        author_id=admin.id,
+    )
+    db.add(announcement)
+    db.flush()
+    db.add(models.AuditLog(
+        user_id=admin.id, action="create_announcement",
+        detail=f"{admin.username} a publié l'annonce '{data.title}'"
+    ))
+    db.commit()
+    db.refresh(announcement)
+    return {
+        "id": announcement.id,
+        "title": announcement.title,
+        "content": announcement.content,
+        "category": announcement.category,
+        "featured": announcement.featured,
+        "breaking": announcement.breaking,
+        "active": announcement.active,
+        "created_at": str(announcement.created_at),
+    }
+
+@router.post("/announcements/{announcement_id}/image")
+async def upload_announcement_image(
+    announcement_id: int,
+    file: UploadFile = File(...),
+    admin=Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    ann = db.query(models.Announcement).filter(models.Announcement.id == announcement_id).first()
+    if not ann:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+
+    os.makedirs(ANNOUNCEMENTS_DIR, exist_ok=True)
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in ALLOWED_LOGO_EXTS:
+        raise HTTPException(status_code=400, detail=f"Extension non supportée. Autorisées : {', '.join(ALLOWED_LOGO_EXTS)}")
+
+    content = await file.read()
+    if len(content) > MAX_LOGO_SIZE:
+        raise HTTPException(status_code=400, detail="Fichier trop lourd (max 2 Mo)")
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="Fichier vide")
+
+    # Supprimer l'ancienne image
+    if ann.image and ann.image.startswith("/announcement-images/"):
+        old_path = os.path.join(ANNOUNCEMENTS_DIR, os.path.basename(ann.image))
+        if os.path.exists(old_path):
+            try:
+                os.remove(old_path)
+            except OSError:
+                pass
+
+    filename = f"{uuid.uuid4().hex}{ext}"
+    file_path = os.path.join(ANNOUNCEMENTS_DIR, filename)
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    ann.image = f"/announcement-images/{filename}"
+    db.add(models.AuditLog(
+        user_id=admin.id, action="upload_announcement_image",
+        detail=f"{admin.username} a ajouté une image à l'annonce '{ann.title}'"
+    ))
+    db.commit()
+    return {"image": ann.image}
+
+@router.put("/announcements/{announcement_id}")
+def update_announcement(announcement_id: int, data: AnnouncementUpdate, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    ann = db.query(models.Announcement).filter(models.Announcement.id == announcement_id).first()
+    if not ann:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+    for key, value in data.model_dump(exclude_unset=True).items():
+        setattr(ann, key, value.strip() if isinstance(value, str) else value)
+    db.add(models.AuditLog(
+        user_id=admin.id, action="update_announcement",
+        detail=f"{admin.username} a modifié l'annonce '{ann.title}' (id={ann.id})"
+    ))
+    db.commit()
+    return {"message": "Annonce mise à jour"}
+
+@router.delete("/announcements/{announcement_id}")
+def delete_announcement(announcement_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    ann = db.query(models.Announcement).filter(models.Announcement.id == announcement_id).first()
+    if not ann:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+    db.add(models.AuditLog(
+        user_id=admin.id, action="delete_announcement",
+        detail=f"{admin.username} a supprimé l'annonce '{ann.title}'"
+    ))
+    # Supprimer l'image associée si elle existe
+    if ann.image and ann.image.startswith("/announcement-images/"):
+        img_path = os.path.join(ANNOUNCEMENTS_DIR, os.path.basename(ann.image))
+        if os.path.exists(img_path):
+            try:
+                os.remove(img_path)
+            except OSError:
+                pass
+    db.delete(ann)
+    db.commit()
+    return {"message": "Annonce supprimée"}
+
